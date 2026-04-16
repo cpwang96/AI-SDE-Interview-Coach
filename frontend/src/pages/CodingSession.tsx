@@ -51,9 +51,13 @@ function formatQuestionMd(question: any): string {
   let md = `${question.description}\n\n`
   md += `### Examples\n\n`
   for (const [i, ex] of (question.examples || []).entries()) {
-    md += `**Example ${i + 1}:**\n\n`
-    md += `\`\`\`\nInput: ${ex.input}\nOutput: ${ex.output}\n\`\`\`\n\n`
+    md += `**Example ${i + 1}:**\n`
+    md += `\`\`\`\n`
+    md += `Input:  ${ex.input}\n`
+    md += `Output: ${ex.output}\n`
+    md += `\`\`\`\n`
     if (ex.explanation) md += `> ${ex.explanation}\n\n`
+    else md += '\n'
   }
   const constraints = question.constraints || []
   if (constraints.length > 0) {

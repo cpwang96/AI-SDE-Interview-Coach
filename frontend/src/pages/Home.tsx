@@ -18,6 +18,7 @@ export default function Home() {
   const [solved, setSolved] = useState<Set<string>>(new Set())
   const [assessment, setAssessment] = useState<any>(null)
   const [showPlan, setShowPlan] = useState(false)
+  const [activeTab, setActiveTab] = useState<'coding' | 'design'>('coding')
 
   useEffect(() => {
     getFilters().then(setFilterOptions).catch(() => {})
@@ -40,52 +41,81 @@ export default function Home() {
   const difficultyColor = (d: string) =>
     d === 'easy' ? 'var(--green)' : d === 'medium' ? 'var(--yellow)' : 'var(--red)'
 
+  const difficultyBg = (d: string) =>
+    d === 'easy' ? 'rgba(166,227,161,0.1)' : d === 'medium' ? 'rgba(249,226,175,0.1)' : 'rgba(243,139,168,0.1)'
+
+  const easyCount = questions.filter(q => q.difficulty === 'easy').length
+  const medCount = questions.filter(q => q.difficulty === 'medium').length
+  const hardCount = questions.filter(q => q.difficulty === 'hard').length
+  const solvedCount = questions.filter(q => solved.has(q.id)).length
+
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px', overflowY: 'auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: 1000, marginBottom: 32 }}>
-        <div>
-          <h1 style={{ fontSize: 30, fontWeight: 700, marginBottom: 4 }}>
-            Interview Coach
-          </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-            {userName ? `Welcome back, ${userName}` : 'AI-powered interview prep'}
-            {assessment?.overall_level && (
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '32px 20px', overflowY: 'auto' }}>
+      {/* Hero header */}
+      <div style={{ width: '100%', maxWidth: 960, marginBottom: 28 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 6, letterSpacing: -0.5 }}>
+              Interview Coach
+            </h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+              {userName ? `Welcome back, ${userName}` : 'AI-powered SDE interview prep'}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => navigate('/study')}
+              style={{ background: 'var(--accent)', color: 'var(--bg-primary)', fontSize: 13, fontWeight: 600 }}
+            >
+              Study Plans
+            </button>
+            {assessment?.study_plan && (
+              <button
+                onClick={() => setShowPlan(!showPlan)}
+                style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)', fontSize: 13 }}
+              >
+                {showPlan ? 'Hide' : 'View'} Study Plan
+              </button>
+            )}
+            {!assessment && (
+              <button
+                onClick={() => navigate('/assessment')}
+                style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)', fontSize: 13 }}
+              >
+                Take Assessment
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Stats row */}
+        <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+          <div style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: '14px 20px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--accent)' }}>{solvedCount}/{questions.length}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Solved</span>
+          </div>
+          <div style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: '14px 20px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--green)' }}>{easyCount}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Easy</span>
+          </div>
+          <div style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: '14px 20px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--yellow)' }}>{medCount}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Medium</span>
+          </div>
+          <div style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: '14px 20px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--red)' }}>{hardCount}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Hard</span>
+          </div>
+          {assessment?.overall_level && (
+            <div style={{ background: 'var(--bg-surface)', borderRadius: 10, padding: '14px 20px', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <span style={{
-                marginLeft: 12,
-                fontSize: 12,
-                fontWeight: 600,
-                padding: '2px 10px',
-                borderRadius: 4,
-                background: 'var(--bg-surface)',
+                fontSize: 16, fontWeight: 700,
                 color: assessment.overall_level === 'advanced' ? 'var(--green)' : assessment.overall_level === 'intermediate' ? 'var(--yellow)' : 'var(--red)',
               }}>
                 {assessment.overall_level}
               </span>
-            )}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            onClick={() => navigate('/study')}
-            style={{ background: 'var(--accent)', color: 'var(--bg-primary)', fontSize: 13, fontWeight: 600 }}
-          >
-            Study Plans
-          </button>
-          {assessment?.study_plan && (
-            <button
-              onClick={() => setShowPlan(!showPlan)}
-              style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)', fontSize: 13 }}
-            >
-              {showPlan ? 'Hide' : 'View'} Study Plan
-            </button>
-          )}
-          {!assessment && (
-            <button
-              onClick={() => navigate('/assessment')}
-              style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)', fontSize: 13 }}
-            >
-              Take Assessment
-            </button>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Level</span>
+            </div>
           )}
         </div>
       </div>
@@ -93,179 +123,200 @@ export default function Home() {
       {/* Study Plan */}
       {showPlan && assessment?.study_plan && (
         <div style={{
-          width: '100%',
-          maxWidth: 1000,
-          background: 'var(--bg-surface)',
-          padding: 24,
-          borderRadius: 12,
-          marginBottom: 24,
-          lineHeight: 1.7,
-          fontSize: 14,
+          width: '100%', maxWidth: 960,
+          background: 'var(--bg-surface)', padding: 24, borderRadius: 12, marginBottom: 24,
+          lineHeight: 1.7, fontSize: 14,
         }}>
           <ReactMarkdown>{assessment.study_plan}</ReactMarkdown>
         </div>
       )}
 
-      {/* Topic scores from assessment */}
+      {/* Topic scores */}
       {assessment?.topic_scores && Object.keys(assessment.topic_scores).length > 0 && (
-        <div style={{ width: '100%', maxWidth: 1000, marginBottom: 24 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, color: 'var(--text-secondary)' }}>
-            Your Topic Scores
-          </h3>
+        <div style={{ width: '100%', maxWidth: 960, marginBottom: 20 }}>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {Object.entries(assessment.topic_scores).map(([topic, score]: [string, any]) => (
               <div key={topic} style={{
-                background: 'var(--bg-surface)',
-                padding: '6px 14px',
-                borderRadius: 6,
-                fontSize: 13,
-                display: 'flex',
-                gap: 8,
-                alignItems: 'center',
+                background: 'var(--bg-surface)', padding: '6px 14px', borderRadius: 6, fontSize: 13,
+                display: 'flex', gap: 8, alignItems: 'center',
               }}>
                 <span>{topic}</span>
-                <span style={{
-                  fontWeight: 600,
-                  color: score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--yellow)' : 'var(--red)',
-                }}>
-                  {score}
-                </span>
+                <span style={{ fontWeight: 600, color: score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--yellow)' : 'var(--red)' }}>{score}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 32, width: '100%', maxWidth: 1000, flexWrap: 'wrap' }}>
-        {/* Coding Questions */}
-        <div style={{ flex: 1, minWidth: 400 }}>
-          {/* Blind 75 collection header */}
-          <div style={{
-            background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))',
-            border: '1px solid rgba(99,102,241,0.3)',
-            borderRadius: 12,
-            padding: '16px 20px',
-            marginBottom: 16,
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 700 }}>Blind 75</h2>
-              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                {questions.length} question{questions.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
-              Curated set of must-know interview problems across all major algorithm topics
-            </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ padding: '6px 12px', fontSize: 13 }}>
+      {/* Tabs */}
+      <div style={{ width: '100%', maxWidth: 960 }}>
+        <div style={{ display: 'flex', gap: 0, borderBottom: '2px solid var(--border)', marginBottom: 16 }}>
+          {(['coding', 'design'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                background: 'transparent',
+                color: activeTab === tab ? 'var(--accent)' : 'var(--text-muted)',
+                borderRadius: 0,
+                borderBottom: activeTab === tab ? '2px solid var(--accent)' : '2px solid transparent',
+                marginBottom: -2,
+                padding: '10px 20px',
+                fontSize: 14,
+                fontWeight: 600,
+                transform: 'none',
+              }}
+            >
+              {tab === 'coding' ? `Coding (${questions.length})` : `System Design (${designTopics.length})`}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'coding' && (
+          <>
+            {/* Filters */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+              <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ padding: '6px 12px', fontSize: 12 }}>
                 <option value="">All difficulties</option>
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
                 <option value="hard">Hard</option>
               </select>
-              <select value={algorithm} onChange={e => setAlgorithm(e.target.value)} style={{ padding: '6px 12px', fontSize: 13 }}>
+              <select value={algorithm} onChange={e => setAlgorithm(e.target.value)} style={{ padding: '6px 12px', fontSize: 12 }}>
                 <option value="">All algorithms</option>
                 {filterOptions.algorithms.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
-              <select value={company} onChange={e => setCompany(e.target.value)} style={{ padding: '6px 12px', fontSize: 13 }}>
+              <select value={company} onChange={e => setCompany(e.target.value)} style={{ padding: '6px 12px', fontSize: 12 }}>
                 <option value="">All companies</option>
                 {filterOptions.companies.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              <select value={frequency} onChange={e => setFrequency(e.target.value)} style={{ padding: '6px 12px', fontSize: 13 }}>
+              <select value={frequency} onChange={e => setFrequency(e.target.value)} style={{ padding: '6px 12px', fontSize: 12 }}>
                 <option value="">All frequencies</option>
-                <option value="high">High frequency</option>
-                <option value="medium">Medium frequency</option>
-                <option value="low">Low frequency</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
               </select>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {questions.map(q => (
               <button
-                key={q.id}
-                onClick={() => navigate(`/coding?id=${q.id}`)}
-                style={{
-                  background: 'var(--bg-surface)',
-                  color: 'var(--text-primary)',
-                  padding: '14px 18px',
-                  textAlign: 'left',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
+                onClick={() => navigate('/coding')}
+                style={{ marginLeft: 'auto', background: 'var(--accent)', color: 'var(--bg-primary)', fontSize: 12, fontWeight: 600, padding: '6px 14px' }}
               >
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {solved.has(q.id) && (
-                    <span style={{ color: 'var(--green)', fontSize: 14, fontWeight: 700 }}>✓</span>
-                  )}
-                  {q.title}
-                </span>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                  {q.frequency === 'high' && (
-                    <span style={{ fontSize: 10, color: 'var(--red)', background: 'rgba(255,80,80,0.1)', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>HOT</span>
-                  )}
-                  {(q.companies || []).slice(0, 2).map((c: string) => (
-                    <span key={c} style={{ fontSize: 10, color: 'var(--accent)', background: 'rgba(99,102,241,0.1)', padding: '2px 6px', borderRadius: 4 }}>
-                      {c}
-                    </span>
-                  ))}
-                  {q.tags.slice(0, 2).map((t: string) => (
-                    <span key={t} style={{ fontSize: 10, color: 'var(--text-muted)', background: 'var(--bg-hover)', padding: '2px 6px', borderRadius: 4 }}>
-                      {t}
-                    </span>
-                  ))}
-                  <span style={{ color: difficultyColor(q.difficulty), fontWeight: 600, fontSize: 12, minWidth: 55, textAlign: 'right' }}>
+                Random
+              </button>
+            </div>
+
+            {/* Question table */}
+            <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)' }}>
+              {/* Table header */}
+              <div style={{
+                display: 'grid', gridTemplateColumns: '36px 1fr auto 70px',
+                padding: '10px 16px', background: 'var(--bg-secondary)',
+                fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5,
+              }}>
+                <span></span>
+                <span>Title</span>
+                <span style={{ textAlign: 'right', paddingRight: 12 }}>Tags</span>
+                <span style={{ textAlign: 'right' }}>Difficulty</span>
+              </div>
+
+              {/* Question rows */}
+              {questions.map((q, i) => (
+                <button
+                  key={q.id}
+                  onClick={() => navigate(`/coding?id=${q.id}`)}
+                  style={{
+                    display: 'grid', gridTemplateColumns: '36px 1fr auto 70px',
+                    width: '100%',
+                    background: i % 2 === 0 ? 'var(--bg-primary)' : 'rgba(49,50,68,0.3)',
+                    color: 'var(--text-primary)',
+                    padding: '12px 16px',
+                    textAlign: 'left',
+                    borderRadius: 0,
+                    borderBottom: i < questions.length - 1 ? '1px solid rgba(69,71,90,0.3)' : 'none',
+                    alignItems: 'center',
+                    transform: 'none',
+                  }}
+                >
+                  {/* Status */}
+                  <span style={{ fontSize: 14 }}>
+                    {solved.has(q.id) ? (
+                      <span style={{ color: 'var(--green)', fontWeight: 700 }}>✓</span>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>{i + 1}</span>
+                    )}
+                  </span>
+
+                  {/* Title */}
+                  <span style={{ fontSize: 13.5, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {q.title}
+                    {q.frequency === 'high' && (
+                      <span style={{ fontSize: 9, color: 'var(--red)', background: 'rgba(243,139,168,0.12)', padding: '1px 5px', borderRadius: 3, fontWeight: 700, letterSpacing: 0.3 }}>HOT</span>
+                    )}
+                  </span>
+
+                  {/* Tags */}
+                  <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end', paddingRight: 12 }}>
+                    {(q.companies || []).slice(0, 2).map((c: string) => (
+                      <span key={c} style={{ fontSize: 10, color: 'var(--accent)', background: 'rgba(137,180,250,0.08)', padding: '2px 6px', borderRadius: 3 }}>
+                        {c}
+                      </span>
+                    ))}
+                    {q.tags.slice(0, 2).map((t: string) => (
+                      <span key={t} style={{ fontSize: 10, color: 'var(--text-muted)', background: 'rgba(69,71,90,0.5)', padding: '2px 6px', borderRadius: 3 }}>
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Difficulty */}
+                  <span style={{
+                    color: difficultyColor(q.difficulty), fontWeight: 600, fontSize: 12, textAlign: 'right',
+                    background: difficultyBg(q.difficulty), padding: '2px 8px', borderRadius: 4, justifySelf: 'end',
+                  }}>
                     {q.difficulty}
                   </span>
-                </div>
-              </button>
-            ))}
-            <button
-              onClick={() => navigate('/coding')}
-              style={{
-                background: 'var(--accent)',
-                color: 'var(--bg-primary)',
-                padding: '14px 18px',
-                fontWeight: 600,
-              }}
-            >
-              Random Question
-            </button>
-          </div>
-        </div>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
-        {/* System Design */}
-        <div style={{ flex: 1, minWidth: 400 }}>
-          <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 16 }}>System Design</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {designTopics.map(t => (
+        {activeTab === 'design' && (
+          <div style={{ borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)' }}>
+            {designTopics.map((t, i) => (
               <button
                 key={t.id}
                 onClick={() => navigate(`/system-design?topic=${encodeURIComponent(t.title)}`)}
                 style={{
-                  background: 'var(--bg-surface)',
+                  width: '100%',
+                  background: i % 2 === 0 ? 'var(--bg-primary)' : 'rgba(49,50,68,0.3)',
                   color: 'var(--text-primary)',
-                  padding: '14px 18px',
+                  padding: '14px 20px',
                   textAlign: 'left',
+                  borderRadius: 0,
+                  borderBottom: i < designTopics.length - 1 ? '1px solid rgba(69,71,90,0.3)' : 'none',
+                  fontSize: 14,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  transform: 'none',
                 }}
               >
-                {t.title}
+                <span style={{ color: 'var(--text-muted)', fontSize: 12, minWidth: 24 }}>{i + 1}</span>
+                <span>{t.title}</span>
               </button>
             ))}
             <button
               onClick={() => navigate('/system-design')}
               style={{
-                background: 'var(--accent)',
-                color: 'var(--bg-primary)',
-                padding: '14px 18px',
-                fontWeight: 600,
+                width: '100%', background: 'var(--accent)', color: 'var(--bg-primary)',
+                padding: '14px 20px', fontWeight: 600, borderRadius: '0 0 10px 10px',
+                transform: 'none',
               }}
             >
               Random Topic
             </button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
