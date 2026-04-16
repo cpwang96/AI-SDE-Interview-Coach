@@ -51,6 +51,14 @@ export function submitSolution(sessionId: string, code: string, language: string
   });
 }
 
+export function getSolvedQuestions(userId: string = 'default') {
+  return request<string[]>(`/coding/solved?user_id=${userId}`);
+}
+
+export function getLatestSubmission(questionId: string, userId: string = 'default') {
+  return request<any>(`/coding/submissions/${questionId}?user_id=${userId}`);
+}
+
 export function generateQuestion(topic: string, difficulty: string, context?: string) {
   return request<any>('/coding/generate', {
     method: 'POST',

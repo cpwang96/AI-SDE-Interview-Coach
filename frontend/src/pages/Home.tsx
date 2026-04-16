@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
-import { getQuestions, getFilters, getDesignTopics, getAssessmentResults } from '../api/client'
+import { getQuestions, getFilters, getSolvedQuestions, getDesignTopics, getAssessmentResults } from '../api/client'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -15,12 +15,14 @@ export default function Home() {
   const [algorithm, setAlgorithm] = useState('')
   const [company, setCompany] = useState('')
   const [frequency, setFrequency] = useState('')
+  const [solved, setSolved] = useState<Set<string>>(new Set())
   const [assessment, setAssessment] = useState<any>(null)
   const [showPlan, setShowPlan] = useState(false)
 
   useEffect(() => {
     getFilters().then(setFilterOptions).catch(() => {})
     getDesignTopics().then(setDesignTopics).catch(() => {})
+    getSolvedQuestions().then(ids => setSolved(new Set(ids))).catch(() => {})
     if (userId) {
       getAssessmentResults(userId).then(setAssessment).catch(() => {})
     }
@@ -193,7 +195,12 @@ export default function Home() {
                   alignItems: 'center',
                 }}
               >
-                <span>{q.title}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {solved.has(q.id) && (
+                    <span style={{ color: 'var(--green)', fontSize: 14, fontWeight: 700 }}>✓</span>
+                  )}
+                  {q.title}
+                </span>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                   {q.frequency === 'high' && (
                     <span style={{ fontSize: 10, color: 'var(--red)', background: 'rgba(255,80,80,0.1)', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>HOT</span>

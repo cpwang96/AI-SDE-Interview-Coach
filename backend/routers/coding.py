@@ -8,6 +8,7 @@ from services.ai_coach import chat_with_coach, CODING_SYSTEM_PROMPT
 from services.question_bank import get_question, list_questions, get_all_tags
 from services.question_generator import generate_question, get_generated_questions, generate_study_session
 from services.code_runner import execute_code
+from services.submission_store import save_submission, get_solved_questions, get_latest_submission, load_submissions
 
 router = APIRouter()
 
@@ -235,15 +236,34 @@ def submit_solution(req: SubmitRequest):
     failed = sum(1 for l in lines if "FAIL" in l)
     total = passed + failed
 
+    # If no tests ran but there was an error, surface it clearly
+    stderr = result.stderr or ""
+    if total == 0 and result.exit_code != 0 and stderr:
+        stderr = f"Execution failed — no tests ran.\n\n{stderr}"
+
+    all_passed = total > 0 and failed == 0
+
+    # Persist submission
+    user_id = getattr(req, "user_id", "default") if hasattr(req, "user_id") else "default"
+    save_submission(
+        user_id=user_id,
+        question_id=req.question_id,
+        code=req.code,
+        language=req.language,
+        passed=passed,
+        total=total,
+        all_passed=all_passed,
+    )
+
     return {
         "stdout": result.stdout,
-        "stderr": result.stderr,
+        "stderr": stderr,
         "exit_code": result.exit_code,
         "time_ms": result.time_ms,
         "passed": passed,
         "failed": failed,
         "total": total,
-        "all_passed": total > 0 and failed == 0,
+        "all_passed": all_passed,
     }
 
 
@@ -260,3 +280,24 @@ def chat(req: ChatRequest):
     except Exception:
         response = "*AI coach is unavailable. Please check your Anthropic API credits at console.anthropic.com.*"
     return ChatResponse(response=response)
+
+
+@router.get("/solved")
+def get_solved(user_id: str = "default"):
+    """Return list of question IDs the user has solved."""
+    return get_solved_questions(user_id)
+
+
+@router.get("/submissions/{question_id}")
+def get_submission(question_id: str, user_id: str = "default"):
+    """Return the latest submission for a question."""
+    sub = get_latest_submission(user_id, question_id)
+    if sub:
+        return sub
+    return {"error": "No submission found"}
+
+
+@router.get("/submissions")
+def get_all_submissions(user_id: str = "default"):
+    """Return all submissions for a user."""
+    return load_submissions(user_id)

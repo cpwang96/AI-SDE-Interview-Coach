@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import CodeEditor from '../components/CodeEditor'
 import ChatPanel from '../components/ChatPanel'
-import { startCodingSession, sendCodingMessage, executeCode, submitSolution } from '../api/client'
+import { startCodingSession, sendCodingMessage, executeCode, submitSolution, getLatestSubmission } from '../api/client'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -27,11 +27,24 @@ export default function CodingSession() {
   const [initializing, setInitializing] = useState(true)
 
   useEffect(() => {
-    startCodingSession(questionId).then(res => {
+    startCodingSession(questionId).then(async (res) => {
       setSessionId(res.session_id)
       setQuestion(res.question)
-      setCode(res.question.starter_code?.[language] || '')
       setMessages([{ role: 'assistant', content: res.coach_message }])
+
+      // Load previous submission if available
+      if (res.question.id) {
+        try {
+          const sub = await getLatestSubmission(res.question.id)
+          if (sub?.code) {
+            setCode(sub.code)
+            if (sub.language) setLanguage(sub.language)
+            setInitializing(false)
+            return
+          }
+        } catch {}
+      }
+      setCode(res.question.starter_code?.[language] || '')
       setInitializing(false)
     }).catch(() => setInitializing(false))
   }, [])
