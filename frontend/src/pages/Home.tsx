@@ -131,8 +131,23 @@ export default function Home() {
       <div style={{ display: 'flex', gap: 32, width: '100%', maxWidth: 1000, flexWrap: 'wrap' }}>
         {/* Coding Questions */}
         <div style={{ flex: 1, minWidth: 400 }}>
-          <div style={{ marginBottom: 16 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>Coding Questions</h2>
+          {/* Blind 75 collection header */}
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))',
+            border: '1px solid rgba(99,102,241,0.3)',
+            borderRadius: 12,
+            padding: '16px 20px',
+            marginBottom: 16,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700 }}>Blind 75</h2>
+              <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                {questions.length} question{questions.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
+              Curated set of must-know interview problems across all major algorithm topics
+            </p>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ padding: '6px 12px', fontSize: 13 }}>
                 <option value="">All difficulties</option>

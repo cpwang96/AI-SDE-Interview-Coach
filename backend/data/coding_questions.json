@@ -609,7 +609,7 @@
       "amazon",
       "microsoft"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   },
   {
@@ -1134,7 +1134,7 @@
       "google",
       "meta"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   },
   {
@@ -1417,7 +1417,7 @@
       "apple",
       "microsoft"
     ],
-    "frequency": "medium",
+    "frequency": "low",
     "category": "blind75"
   },
   {
@@ -1558,7 +1558,7 @@
       "meta",
       "google"
     ],
-    "frequency": "medium",
+    "frequency": "low",
     "category": "blind75"
   },
   {
@@ -1717,7 +1717,7 @@
       "bloomberg",
       "goldman-sachs"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   },
   {
@@ -2131,7 +2131,7 @@
       "meta",
       "uber"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   },
   {
@@ -2314,7 +2314,7 @@
       "microsoft",
       "bloomberg"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   },
   {
@@ -2507,7 +2507,7 @@
       "apple",
       "uber"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   },
   {
@@ -3073,7 +3073,7 @@
       "microsoft",
       "bloomberg"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   },
   {
@@ -3703,7 +3703,7 @@
       "microsoft",
       "bloomberg"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   },
   {
@@ -3858,7 +3858,7 @@
       "amazon",
       "meta"
     ],
-    "frequency": "high",
+    "frequency": "low",
     "category": "blind75"
   },
   {
@@ -3988,7 +3988,7 @@
       "microsoft",
       "linkedin"
     ],
-    "frequency": "high",
+    "frequency": "low",
     "category": "blind75"
   },
   {
@@ -4142,7 +4142,7 @@
       "apple",
       "bloomberg"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   },
   {
@@ -4319,7 +4319,7 @@
       "meta",
       "microsoft"
     ],
-    "frequency": "high",
+    "frequency": "low",
     "category": "blind75"
   },
   {
@@ -4439,7 +4439,7 @@
       "uber",
       "linkedin"
     ],
-    "frequency": "high",
+    "frequency": "low",
     "category": "blind75"
   },
   {
@@ -4656,7 +4656,7 @@
       "meta",
       "microsoft"
     ],
-    "frequency": "high",
+    "frequency": "low",
     "category": "blind75"
   },
   {
@@ -4929,7 +4929,7 @@
       "microsoft",
       "apple"
     ],
-    "frequency": "high",
+    "frequency": "low",
     "category": "blind75"
   },
   {
@@ -5052,7 +5052,7 @@
       "google",
       "meta"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   },
   {
@@ -5269,7 +5269,7 @@
       "apple",
       "bloomberg"
     ],
-    "frequency": "high",
+    "frequency": "medium",
     "category": "blind75"
   }
 ]
