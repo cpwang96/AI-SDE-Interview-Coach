@@ -10,6 +10,7 @@ class CodingQuestion(BaseModel):
     examples: list[dict]
     constraints: list[str]
     starter_code: dict[str, str]  # language -> starter code
+    test_cases: list[dict] = []
     tags: list[str]
 
 

@@ -54,6 +54,20 @@ export default function CodingSession() {
     setLoading(false)
   }
 
+  const handleSubmitToCoach = async () => {
+    if (!sessionId) return
+    const message = "Please review my code. Analyze it for correctness, time/space complexity, edge cases, and code quality. Then suggest improvements."
+    setMessages(prev => [...prev, { role: 'user', content: '📝 *Submitted code for review*' }])
+    setLoading(true)
+    try {
+      const res = await sendCodingMessage(sessionId, message, code, language)
+      setMessages(prev => [...prev, { role: 'assistant', content: res.response }])
+    } catch {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Error communicating with coach. Please try again.' }])
+    }
+    setLoading(false)
+  }
+
   const handleRun = async () => {
     setRunning(true)
     setOutput(null)
@@ -106,15 +120,19 @@ export default function CodingSession() {
             }}>
               {question.difficulty}
             </span>
+            {question.tags?.map((t: string) => (
+              <span key={t} style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-surface)', padding: '2px 8px', borderRadius: 4 }}>
+                {t}
+              </span>
+            ))}
           </>
         )}
       </div>
 
-      {/* Main layout: Editor + Chat side by side */}
+      {/* Main layout */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* Left: Problem + Code Editor */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border)' }}>
-          {/* Problem description */}
           {question && (
             <div style={{
               padding: 16,
@@ -136,7 +154,6 @@ export default function CodingSession() {
               </div>
             </div>
           )}
-          {/* Code editor */}
           <div style={{ flex: 1 }}>
             <CodeEditor
               code={code}
@@ -151,13 +168,33 @@ export default function CodingSession() {
         </div>
 
         {/* Right: Chat */}
-        <div style={{ width: 420, minWidth: 350 }}>
-          <ChatPanel
-            messages={messages}
-            onSend={handleSend}
-            loading={loading}
-            placeholder="Ask for a hint, discuss approach, or submit code for review..."
-          />
+        <div style={{ width: 420, minWidth: 350, display: 'flex', flexDirection: 'column' }}>
+          {/* Submit to Coach button */}
+          <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+            <button
+              onClick={handleSubmitToCoach}
+              disabled={loading}
+              style={{
+                width: '100%',
+                background: 'var(--green)',
+                color: 'var(--bg-primary)',
+                fontWeight: 600,
+                fontSize: 13,
+                padding: '8px',
+                opacity: loading ? 0.5 : 1,
+              }}
+            >
+              Submit Code to Coach for Review
+            </button>
+          </div>
+          <div style={{ flex: 1 }}>
+            <ChatPanel
+              messages={messages}
+              onSend={handleSend}
+              loading={loading}
+              placeholder="Ask for a hint, discuss approach..."
+            />
+          </div>
         </div>
       </div>
     </div>

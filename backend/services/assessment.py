@@ -11,11 +11,11 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "ass
 # Topics and difficulties to cover in assessment
 ASSESSMENT_PLAN = [
     {"topic": "array", "difficulty": "easy", "question_id": "two-sum"},
-    {"topic": "string", "difficulty": "easy", "question_id": "valid-parentheses"},
+    {"topic": "linked-list", "difficulty": "easy", "question_id": "reverse-linked-list"},
+    {"topic": "string", "difficulty": "medium", "question_id": "longest-substring"},
+    {"topic": "graph", "difficulty": "medium", "question_id": "course-schedule"},
     {"topic": "sorting", "difficulty": "medium", "question_id": "merge-intervals"},
-    {"topic": "design", "difficulty": "medium", "question_id": "lru-cache"},
-    {"topic": "binary-search", "difficulty": "hard", "question_id": "median-sorted-arrays"},
-    {"topic": "bfs", "difficulty": "hard", "question_id": "word-ladder"},
+    {"topic": "two-pointers", "difficulty": "hard", "question_id": "trapping-rain-water"},
 ]
 
 EVALUATION_PROMPT = """You are evaluating a coding interview candidate's solution.
