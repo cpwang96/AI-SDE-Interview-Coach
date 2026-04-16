@@ -42,10 +42,37 @@ def get_question(
 def list_questions(
     difficulty: Optional[str] = None,
     topic: Optional[str] = None,
+    company: Optional[str] = None,
+    frequency: Optional[str] = None,
+    category: Optional[str] = None,
 ) -> list[CodingQuestion]:
     questions = load_questions()
     if difficulty:
         questions = [q for q in questions if q.difficulty == difficulty]
     if topic:
         questions = [q for q in questions if topic.lower() in [t.lower() for t in q.tags]]
+    if company:
+        questions = [q for q in questions if company.lower() in [c.lower() for c in q.companies]]
+    if frequency:
+        questions = [q for q in questions if q.frequency == frequency]
+    if category:
+        questions = [q for q in questions if q.category.lower() == category.lower()]
     return questions
+
+
+def get_all_tags() -> dict:
+    """Return all unique algorithms, companies, and categories for filter dropdowns."""
+    questions = load_questions()
+    algorithms = set()
+    companies = set()
+    categories = set()
+    for q in questions:
+        algorithms.update(q.tags)
+        companies.update(q.companies)
+        if q.category:
+            categories.add(q.category)
+    return {
+        "algorithms": sorted(algorithms),
+        "companies": sorted(companies),
+        "categories": sorted(categories),
+    }

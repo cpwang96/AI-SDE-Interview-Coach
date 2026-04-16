@@ -5,7 +5,7 @@ from typing import Optional
 
 from models.schemas import StartSessionRequest, ChatRequest, ChatResponse
 from services.ai_coach import chat_with_coach, CODING_SYSTEM_PROMPT
-from services.question_bank import get_question, list_questions
+from services.question_bank import get_question, list_questions, get_all_tags
 from services.question_generator import generate_question, get_generated_questions, generate_study_session
 from services.code_runner import execute_code
 
@@ -32,18 +32,38 @@ class GenerateSessionRequest(BaseModel):
 
 
 @router.get("/questions")
-def get_questions(difficulty: Optional[str] = None, topic: Optional[str] = None):
-    static = list_questions(difficulty=difficulty, topic=topic)
-    static_list = [{"id": q.id, "title": q.title, "difficulty": q.difficulty, "tags": q.tags, "source": "bank"} for q in static]
+def get_questions(
+    difficulty: Optional[str] = None,
+    topic: Optional[str] = None,
+    company: Optional[str] = None,
+    frequency: Optional[str] = None,
+    category: Optional[str] = None,
+):
+    static = list_questions(difficulty=difficulty, topic=topic, company=company, frequency=frequency, category=category)
+    static_list = [{
+        "id": q.id, "title": q.title, "difficulty": q.difficulty,
+        "tags": q.tags, "companies": q.companies, "frequency": q.frequency,
+        "category": q.category, "source": "bank",
+    } for q in static]
 
     generated = get_generated_questions()
     if difficulty:
         generated = [q for q in generated if q.get("difficulty") == difficulty]
     if topic:
         generated = [q for q in generated if topic.lower() in [t.lower() for t in q.get("tags", [])]]
-    gen_list = [{"id": q["id"], "title": q["title"], "difficulty": q["difficulty"], "tags": q.get("tags", []), "source": "generated"} for q in generated]
+    gen_list = [{
+        "id": q["id"], "title": q["title"], "difficulty": q["difficulty"],
+        "tags": q.get("tags", []), "companies": [], "frequency": "medium",
+        "category": "generated", "source": "generated",
+    } for q in generated]
 
     return static_list + gen_list
+
+
+@router.get("/filters")
+def get_filters():
+    """Return all available filter options for the UI."""
+    return get_all_tags()
 
 
 @router.post("/generate")

@@ -12,12 +12,19 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 // Coding endpoints
-export function getQuestions(difficulty?: string, topic?: string) {
+export function getQuestions(filters?: { difficulty?: string; topic?: string; company?: string; frequency?: string; category?: string }) {
   const params = new URLSearchParams();
-  if (difficulty) params.set('difficulty', difficulty);
-  if (topic) params.set('topic', topic);
+  if (filters?.difficulty) params.set('difficulty', filters.difficulty);
+  if (filters?.topic) params.set('topic', filters.topic);
+  if (filters?.company) params.set('company', filters.company);
+  if (filters?.frequency) params.set('frequency', filters.frequency);
+  if (filters?.category) params.set('category', filters.category);
   const qs = params.toString();
   return request<any[]>(`/coding/questions${qs ? '?' + qs : ''}`);
+}
+
+export function getFilters() {
+  return request<{ algorithms: string[]; companies: string[]; categories: string[] }>('/coding/filters');
 }
 
 export function startCodingSession(questionId?: string, difficulty?: string, topic?: string) {

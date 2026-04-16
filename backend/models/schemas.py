@@ -11,7 +11,10 @@ class CodingQuestion(BaseModel):
     constraints: list[str]
     starter_code: dict[str, str]  # language -> starter code
     test_cases: list[dict] = []
-    tags: list[str]
+    tags: list[str]  # algorithm tags: array, hash-table, two-pointers, etc.
+    companies: list[str] = []  # company tags: google, meta, amazon, etc.
+    frequency: str = "medium"  # high, medium, low — how often asked in interviews
+    category: str = ""  # blind75, neetcode150, etc.
 
 
 class StartSessionRequest(BaseModel):

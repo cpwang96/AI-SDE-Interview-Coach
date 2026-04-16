@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
-import { getQuestions, getDesignTopics, getAssessmentResults } from '../api/client'
+import { getQuestions, getFilters, getDesignTopics, getAssessmentResults } from '../api/client'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -10,21 +10,30 @@ export default function Home() {
 
   const [questions, setQuestions] = useState<any[]>([])
   const [designTopics, setDesignTopics] = useState<any[]>([])
-  const [filter, setFilter] = useState<string>('')
+  const [filterOptions, setFilterOptions] = useState<{ algorithms: string[]; companies: string[]; categories: string[] }>({ algorithms: [], companies: [], categories: [] })
+  const [difficulty, setDifficulty] = useState('')
+  const [algorithm, setAlgorithm] = useState('')
+  const [company, setCompany] = useState('')
+  const [frequency, setFrequency] = useState('')
   const [assessment, setAssessment] = useState<any>(null)
   const [showPlan, setShowPlan] = useState(false)
 
   useEffect(() => {
-    getQuestions().then(setQuestions).catch(() => {})
+    getFilters().then(setFilterOptions).catch(() => {})
     getDesignTopics().then(setDesignTopics).catch(() => {})
     if (userId) {
       getAssessmentResults(userId).then(setAssessment).catch(() => {})
     }
   }, [])
 
-  const filteredQuestions = filter
-    ? questions.filter(q => q.difficulty === filter)
-    : questions
+  useEffect(() => {
+    const filters: any = {}
+    if (difficulty) filters.difficulty = difficulty
+    if (algorithm) filters.topic = algorithm
+    if (company) filters.company = company
+    if (frequency) filters.frequency = frequency
+    getQuestions(Object.keys(filters).length ? filters : undefined).then(setQuestions).catch(() => {})
+  }, [difficulty, algorithm, company, frequency])
 
   const difficultyColor = (d: string) =>
     d === 'easy' ? 'var(--green)' : d === 'medium' ? 'var(--yellow)' : 'var(--red)'
@@ -122,22 +131,34 @@ export default function Home() {
       <div style={{ display: 'flex', gap: 32, width: '100%', maxWidth: 1000, flexWrap: 'wrap' }}>
         {/* Coding Questions */}
         <div style={{ flex: 1, minWidth: 400 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 600 }}>Coding Questions</h2>
-            <select
-              value={filter}
-              onChange={e => setFilter(e.target.value)}
-              style={{ padding: '6px 12px', fontSize: 13 }}
-            >
-              <option value="">All difficulties</option>
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
-            </select>
+          <div style={{ marginBottom: 16 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12 }}>Coding Questions</h2>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <select value={difficulty} onChange={e => setDifficulty(e.target.value)} style={{ padding: '6px 12px', fontSize: 13 }}>
+                <option value="">All difficulties</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+              <select value={algorithm} onChange={e => setAlgorithm(e.target.value)} style={{ padding: '6px 12px', fontSize: 13 }}>
+                <option value="">All algorithms</option>
+                {filterOptions.algorithms.map(a => <option key={a} value={a}>{a}</option>)}
+              </select>
+              <select value={company} onChange={e => setCompany(e.target.value)} style={{ padding: '6px 12px', fontSize: 13 }}>
+                <option value="">All companies</option>
+                {filterOptions.companies.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select value={frequency} onChange={e => setFrequency(e.target.value)} style={{ padding: '6px 12px', fontSize: 13 }}>
+                <option value="">All frequencies</option>
+                <option value="high">High frequency</option>
+                <option value="medium">Medium frequency</option>
+                <option value="low">Low frequency</option>
+              </select>
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {filteredQuestions.map(q => (
+            {questions.map(q => (
               <button
                 key={q.id}
                 onClick={() => navigate(`/coding?id=${q.id}`)}
@@ -152,13 +173,21 @@ export default function Home() {
                 }}
               >
                 <span>{q.title}</span>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  {q.tags.map((t: string) => (
-                    <span key={t} style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-hover)', padding: '2px 8px', borderRadius: 4 }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                  {q.frequency === 'high' && (
+                    <span style={{ fontSize: 10, color: 'var(--red)', background: 'rgba(255,80,80,0.1)', padding: '2px 6px', borderRadius: 4, fontWeight: 600 }}>HOT</span>
+                  )}
+                  {(q.companies || []).slice(0, 2).map((c: string) => (
+                    <span key={c} style={{ fontSize: 10, color: 'var(--accent)', background: 'rgba(99,102,241,0.1)', padding: '2px 6px', borderRadius: 4 }}>
+                      {c}
+                    </span>
+                  ))}
+                  {q.tags.slice(0, 2).map((t: string) => (
+                    <span key={t} style={{ fontSize: 10, color: 'var(--text-muted)', background: 'var(--bg-hover)', padding: '2px 6px', borderRadius: 4 }}>
                       {t}
                     </span>
                   ))}
-                  <span style={{ color: difficultyColor(q.difficulty), fontWeight: 600, fontSize: 13, minWidth: 60, textAlign: 'right' }}>
+                  <span style={{ color: difficultyColor(q.difficulty), fontWeight: 600, fontSize: 12, minWidth: 55, textAlign: 'right' }}>
                     {q.difficulty}
                   </span>
                 </div>
