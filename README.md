@@ -8,27 +8,40 @@ Leetcode Premium isn't customized enough. This tool adapts to **your** skill lev
 
 ## Features
 
-### Working Now
-- **Coding Questions** — Monaco editor (VS Code engine) with syntax highlighting, code execution, and AI coaching
-  - 11 problems across easy/medium/hard (arrays, strings, linked lists, graphs, DP, etc.)
-  - Run code directly in the browser (Python & JavaScript)
-  - "Submit to Coach" — Claude reviews your code for correctness, complexity, edge cases
-  - Chat with the AI coach — ask for hints (Socratic method), discuss approach, get follow-ups
-- **System Design** — Interactive mock interviews with Claude as the interviewer
-- **Skill Assessment** — 6-problem diagnostic test, Claude scores each solution and generates a 2-week study plan
-- **User Profiles** — Optional resume/LinkedIn for personalized coaching
+### Coding Practice
+- **32 Blind75-style problems** across easy/medium/hard with 294 test cases (8-12 per problem including edge cases)
+- **Monaco editor** (VS Code engine) with Python, JavaScript, and Java support
+- **Submit = run against test cases** with PASS/FAIL results (like Leetcode)
+- **AI Coach** — ask for hints (Socratic method), discuss approach, get code reviews
+- **Dynamic question generation** — Claude generates new problems based on your weak topics
+- **Filter by** company (Google, Amazon, Meta, Microsoft), algorithm, difficulty, and frequency
 
-### Planned
-- Behavioral question practice (STAR method coaching)
-- Resume deep-dive simulation
-- Company-specific preparation
-- Progress tracking and analytics
+### Study Plans
+- **Blind 75 — 4 Week Sprint** (46 problems, 2/day)
+- **Algorithm Patterns — 6 Week Deep Dive** (47 problems, pattern-focused)
+- **Quick Start — 2 Week Crash Course** (34 problems, 3/day)
+- Daily topic-focused practice with progress tracking and checkboxes
+
+### Progress Tracking
+- Submission history persisted (code, language, pass/fail, timestamp)
+- Green checkmark on homepage for solved questions
+- Last submitted code reloads when reopening a question
+- Study plan progress with per-week completion tracking
+
+### System Design
+- Interactive mock interviews with Claude as the interviewer
+- 10 design topics (URL Shortener, Chat App, News Feed, etc.)
+
+### Assessment & Profiles
+- 6-problem skill diagnostic, Claude scores and generates study plan
+- User profiles with resume/LinkedIn for personalized coaching
 
 ## Prerequisites
 
 - **Python 3.9+** — `python3 --version`
 - **Node.js 18+** — `node --version` (install: `brew install node`)
-- **Anthropic API key** — [Get one here](https://console.anthropic.com/)
+- **Anthropic API key** — [Get one here](https://console.anthropic.com/) (app works without credits for coding/submit, but AI coaching requires credits)
+- **Java JDK** (optional, for Java execution) — `brew install openjdk@21`
 
 ## Quick Start
 
@@ -66,13 +79,12 @@ npm run dev
 
 ## How It Works
 
-1. **Pick a problem** from the home page (or click "Random Question")
-2. **Write your solution** in the Monaco editor — supports Python and JavaScript
-3. **Run your code** to test against sample inputs
-4. **Ask the coach** for hints, discuss your approach, or get unstuck
-5. **Submit to Coach** for a full code review with complexity analysis
-
-The AI coach uses the Socratic method — it nudges you toward the answer rather than giving it away, just like a real interviewer.
+1. **Pick a study plan** or browse questions from the homepage
+2. **Filter** by company, algorithm, difficulty, or frequency
+3. **Write your solution** in the Monaco editor (Python, JavaScript, or Java)
+4. **Run** to test with sample inputs, **Submit** to run against all test cases
+5. **Ask the coach** for hints, discuss your approach, or get unstuck
+6. Track your progress with solved checkmarks and study plan completion
 
 ## Project Structure
 
@@ -81,25 +93,40 @@ The AI coach uses the Socratic method — it nudges you toward the answer rather
 ├── backend/
 │   ├── main.py                     # FastAPI entry point
 │   ├── data/
-│   │   ├── coding_questions.json   # 11 problems with test cases
+│   │   ├── coding_questions.json   # 32 problems with 294 test cases
+│   │   ├── study_plans.json        # 3 structured study plans
+│   │   ├── generated/              # AI-generated questions
+│   │   ├── submissions/            # Submission history per user
+│   │   ├── progress/               # Study plan progress per user
 │   │   ├── users/                  # User profiles (JSON)
 │   │   ├── sessions/               # Saved coding sessions
 │   │   └── assessments/            # Skill assessment results
-│   ├── routers/                    # API endpoints
+│   ├── routers/
+│   │   ├── coding.py               # Questions, submit, chat, filters
+│   │   ├── study_plans.py          # Study plan CRUD + progress
+│   │   ├── system_design.py        # System design sessions
+│   │   ├── execute.py              # Code execution endpoint
+│   │   ├── users.py                # User profiles
+│   │   └── assessment.py           # Skill assessment
 │   └── services/
 │       ├── ai_coach.py             # Claude API + coaching prompts
-│       ├── code_runner.py          # Sandboxed code execution
-│       └── question_bank.py        # Question loading/filtering
+│       ├── code_runner.py          # Subprocess execution (Python/JS/Java)
+│       ├── question_bank.py        # Question loading/filtering
+│       ├── question_generator.py   # Claude-powered question generation
+│       └── submission_store.py     # Submission history persistence
 └── frontend/
     └── src/
+        ├── api/client.ts           # All API functions
         ├── pages/
-        │   ├── Home.tsx            # Question picker + dashboard
-        │   ├── CodingSession.tsx   # Editor + coach chat
+        │   ├── Home.tsx            # Question browser + filters + solved status
+        │   ├── CodingSession.tsx   # Editor + submit + coach chat
+        │   ├── StudyPlan.tsx       # Study plan selection + daily progress
         │   ├── Assessment.tsx      # Skill diagnostic
+        │   ├── SystemDesignSession.tsx
         │   └── Onboarding.tsx      # Profile setup
         └── components/
-            ├── CodeEditor.tsx      # Monaco wrapper
-            └── ChatPanel.tsx       # Chat with markdown
+            ├── CodeEditor.tsx      # Monaco wrapper + language switching
+            └── ChatPanel.tsx       # Chat with markdown rendering
 ```
 
 ## Tech Stack
@@ -108,10 +135,26 @@ The AI coach uses the Socratic method — it nudges you toward the answer rather
 |-------|-----------|-----|
 | Frontend | React + Vite + TypeScript | Fast dev, type safety |
 | Code Editor | Monaco Editor | Same engine as VS Code |
-| Backend | FastAPI (Python) | Async, auto-docs at /docs |
-| AI | Claude API | Best reasoning for code review |
-| Code Execution | subprocess + timeout | Simple, no Docker needed |
-| Storage | Local JSON | Easy to inspect, zero setup |
+| Backend | FastAPI (Python 3.9) | Async, auto-docs at /docs |
+| AI | Claude API (Anthropic) | Best reasoning for code review |
+| Code Execution | subprocess + timeout | Python, JS, Java — no Docker needed |
+| Storage | Local JSON files | Easy to inspect, zero setup |
+
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/coding/questions` | List questions (filterable) |
+| GET | `/api/coding/filters` | Get filter options |
+| GET | `/api/coding/solved` | Get solved question IDs |
+| POST | `/api/coding/start` | Start coding session |
+| POST | `/api/coding/submit` | Submit + run test cases |
+| POST | `/api/coding/chat` | Chat with AI coach |
+| POST | `/api/coding/generate` | Generate new question via AI |
+| GET | `/api/study/plans` | List study plans |
+| GET | `/api/study/plans/{id}` | Get plan with schedule |
+| POST | `/api/study/plans/{id}/complete` | Mark question done |
+| POST | `/api/execute/run` | Run code (no test cases) |
 
 ## License
 

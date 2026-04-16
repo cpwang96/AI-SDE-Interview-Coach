@@ -1,0 +1,11 @@
+[
+  {
+    "question_id": "two-sum",
+    "code": "def two_sum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen:\n            return [seen[target - n], i]\n        seen[n] = i",
+    "language": "python",
+    "passed": 10,
+    "total": 10,
+    "all_passed": true,
+    "submitted_at": "2026-04-15T21:53:03.017144"
+  }
+]
