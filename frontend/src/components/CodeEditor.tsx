@@ -6,13 +6,16 @@ interface CodeEditorProps {
   onChange: (value: string) => void
   onLanguageChange: (lang: string) => void
   onRun: () => void
+  onSubmit: () => void
   output: string | null
   running: boolean
+  submitting: boolean
 }
 
 const LANGUAGES = [
   { value: 'python', label: 'Python' },
   { value: 'javascript', label: 'JavaScript' },
+  { value: 'java', label: 'Java' },
 ]
 
 export default function CodeEditor({
@@ -21,8 +24,10 @@ export default function CodeEditor({
   onChange,
   onLanguageChange,
   onRun,
+  onSubmit,
   output,
   running,
+  submitting,
 }: CodeEditorProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -44,20 +49,36 @@ export default function CodeEditor({
             <option key={l.value} value={l.value}>{l.label}</option>
           ))}
         </select>
-        <button
-          onClick={onRun}
-          disabled={running}
-          style={{
-            background: 'var(--green)',
-            color: 'var(--bg-primary)',
-            fontWeight: 600,
-            fontSize: 13,
-            padding: '6px 16px',
-            opacity: running ? 0.5 : 1,
-          }}
-        >
-          {running ? 'Running...' : 'Run Code'}
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={onRun}
+            disabled={running || submitting}
+            style={{
+              background: 'var(--bg-surface)',
+              color: 'var(--text-primary)',
+              fontWeight: 500,
+              fontSize: 13,
+              padding: '6px 16px',
+              opacity: running || submitting ? 0.5 : 1,
+            }}
+          >
+            {running ? 'Running...' : 'Run'}
+          </button>
+          <button
+            onClick={onSubmit}
+            disabled={submitting || running}
+            style={{
+              background: 'var(--green)',
+              color: 'var(--bg-primary)',
+              fontWeight: 600,
+              fontSize: 13,
+              padding: '6px 20px',
+              opacity: submitting || running ? 0.5 : 1,
+            }}
+          >
+            {submitting ? 'Testing...' : 'Submit'}
+          </button>
+        </div>
       </div>
 
       {/* Editor */}

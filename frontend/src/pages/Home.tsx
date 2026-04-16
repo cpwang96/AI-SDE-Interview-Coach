@@ -15,13 +15,11 @@ export default function Home() {
   const [showPlan, setShowPlan] = useState(false)
 
   useEffect(() => {
-    if (!userId) {
-      navigate('/onboarding')
-      return
-    }
     getQuestions().then(setQuestions).catch(() => {})
     getDesignTopics().then(setDesignTopics).catch(() => {})
-    getAssessmentResults(userId).then(setAssessment).catch(() => {})
+    if (userId) {
+      getAssessmentResults(userId).then(setAssessment).catch(() => {})
+    }
   }, [])
 
   const filteredQuestions = filter
@@ -39,7 +37,7 @@ export default function Home() {
             Interview Coach
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>
-            Welcome back, {userName}
+            {userName ? `Welcome back, ${userName}` : 'AI-powered interview prep'}
             {assessment?.overall_level && (
               <span style={{
                 marginLeft: 12,

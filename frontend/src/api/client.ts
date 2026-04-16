@@ -34,6 +34,23 @@ export function sendCodingMessage(sessionId: string, message: string, code?: str
   });
 }
 
+export function submitSolution(sessionId: string, code: string, language: string, questionId: string) {
+  return request<{
+    stdout: string; stderr: string; exit_code: number; time_ms: number | null;
+    passed: number; failed: number; total: number; all_passed: boolean;
+  }>('/coding/submit', {
+    method: 'POST',
+    body: JSON.stringify({ session_id: sessionId, code, language, question_id: questionId }),
+  });
+}
+
+export function generateQuestion(topic: string, difficulty: string, context?: string) {
+  return request<any>('/coding/generate', {
+    method: 'POST',
+    body: JSON.stringify({ topic, difficulty, context: context || '' }),
+  });
+}
+
 // System design endpoints
 export function getDesignTopics() {
   return request<{ id: number; title: string }[]>('/system-design/topics');
