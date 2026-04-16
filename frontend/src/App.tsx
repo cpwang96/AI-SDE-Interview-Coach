@@ -4,6 +4,7 @@ import Onboarding from './pages/Onboarding'
 import Assessment from './pages/Assessment'
 import CodingSession from './pages/CodingSession'
 import SystemDesignSession from './pages/SystemDesignSession'
+import StudyPlan from './pages/StudyPlan'
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Route path="/assessment" element={<Assessment />} />
       <Route path="/coding" element={<CodingSession />} />
       <Route path="/system-design" element={<SystemDesignSession />} />
+      <Route path="/study" element={<StudyPlan />} />
     </Routes>
   )
 }

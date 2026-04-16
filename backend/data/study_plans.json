@@ -1,0 +1,185 @@
+[
+  {
+    "id": "blind75-4week",
+    "title": "Blind 75 — 4 Week Sprint",
+    "description": "The classic 75 must-know problems, organized by topic. 2-3 problems/day, ~1 hour daily.",
+    "duration_weeks": 4,
+    "questions_per_day": 2,
+    "weeks": [
+      {
+        "week": 1,
+        "theme": "Arrays, Hashing & Strings",
+        "days": [
+          {"day": 1, "topic": "Arrays & Hash Tables", "question_ids": ["two-sum", "contains-duplicate"]},
+          {"day": 2, "topic": "Arrays & Greedy", "question_ids": ["best-time-to-buy-sell-stock", "product-except-self"]},
+          {"day": 3, "topic": "Arrays & Two Pointers", "question_ids": ["3sum", "container-with-most-water"]},
+          {"day": 4, "topic": "Strings & Hashing", "question_ids": ["valid-anagram", "group-anagrams"]},
+          {"day": 5, "topic": "Strings & Sliding Window", "question_ids": ["longest-substring", "valid-parentheses"]},
+          {"day": 6, "topic": "Arrays Deep Dive", "question_ids": ["maximum-subarray", "merge-intervals"]},
+          {"day": 7, "topic": "Review & Catch Up", "question_ids": ["binary-search", "rotate-image"]}
+        ]
+      },
+      {
+        "week": 2,
+        "theme": "Linked Lists, Stacks & Two Pointers",
+        "days": [
+          {"day": 1, "topic": "Linked List Basics", "question_ids": ["reverse-linked-list", "merge-two-sorted-lists"]},
+          {"day": 2, "topic": "Linked List Patterns", "question_ids": ["linked-list-cycle", "lru-cache"]},
+          {"day": 3, "topic": "Two Pointers", "question_ids": ["trapping-rain-water", "container-with-most-water"]},
+          {"day": 4, "topic": "Sliding Window", "question_ids": ["longest-substring", "min-window-substring"]},
+          {"day": 5, "topic": "Stacks & Strings", "question_ids": ["valid-parentheses", "word-break"]},
+          {"day": 6, "topic": "Review & Practice", "question_ids": ["product-except-self"]},
+          {"day": 7, "topic": "Rest / Catch Up", "question_ids": []}
+        ]
+      },
+      {
+        "week": 3,
+        "theme": "Trees, Graphs & BFS/DFS",
+        "days": [
+          {"day": 1, "topic": "Tree Basics", "question_ids": ["max-depth-binary-tree", "invert-binary-tree"]},
+          {"day": 2, "topic": "BST & Validation", "question_ids": ["validate-bst"]},
+          {"day": 3, "topic": "Graph Traversal", "question_ids": ["number-of-islands", "course-schedule"]},
+          {"day": 4, "topic": "BFS Applications", "question_ids": ["word-ladder"]},
+          {"day": 5, "topic": "Backtracking", "question_ids": ["combination-sum"]},
+          {"day": 6, "topic": "Review Graphs", "question_ids": ["course-schedule"]},
+          {"day": 7, "topic": "Rest / Catch Up", "question_ids": []}
+        ]
+      },
+      {
+        "week": 4,
+        "theme": "Dynamic Programming & Advanced",
+        "days": [
+          {"day": 1, "topic": "DP Basics", "question_ids": ["climbing-stairs", "coin-change"]},
+          {"day": 2, "topic": "DP Sequences", "question_ids": ["longest-increasing-subsequence", "word-break"]},
+          {"day": 3, "topic": "DP on Arrays", "question_ids": ["maximum-subarray", "best-time-to-buy-sell-stock"]},
+          {"day": 4, "topic": "Hard Problems", "question_ids": ["median-sorted-arrays", "trapping-rain-water"]},
+          {"day": 5, "topic": "Design", "question_ids": ["lru-cache"]},
+          {"day": 6, "topic": "Mixed Review", "question_ids": ["3sum", "merge-intervals"]},
+          {"day": 7, "topic": "Final Review", "question_ids": ["two-sum", "number-of-islands"]}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "algo-patterns-6week",
+    "title": "Algorithm Patterns — 6 Week Deep Dive",
+    "description": "Master each pattern before moving on. Focus on recognizing patterns, not memorizing solutions. 2 problems/day.",
+    "duration_weeks": 6,
+    "questions_per_day": 2,
+    "weeks": [
+      {
+        "week": 1,
+        "theme": "Two Pointers & Sliding Window",
+        "days": [
+          {"day": 1, "topic": "Two Pointers Intro", "question_ids": ["two-sum", "3sum"]},
+          {"day": 2, "topic": "Two Pointers on Sorted", "question_ids": ["container-with-most-water", "trapping-rain-water"]},
+          {"day": 3, "topic": "Fast & Slow Pointers", "question_ids": ["linked-list-cycle"]},
+          {"day": 4, "topic": "Sliding Window Fixed", "question_ids": ["longest-substring"]},
+          {"day": 5, "topic": "Sliding Window Variable", "question_ids": ["min-window-substring"]},
+          {"day": 6, "topic": "Pattern Review", "question_ids": ["valid-anagram", "contains-duplicate"]},
+          {"day": 7, "topic": "Rest / Catch Up", "question_ids": []}
+        ]
+      },
+      {
+        "week": 2,
+        "theme": "Hash Maps & Frequency Counting",
+        "days": [
+          {"day": 1, "topic": "Hash Map Basics", "question_ids": ["two-sum", "valid-anagram"]},
+          {"day": 2, "topic": "Frequency Maps", "question_ids": ["contains-duplicate", "group-anagrams"]},
+          {"day": 3, "topic": "Hash Map + Arrays", "question_ids": ["product-except-self"]},
+          {"day": 4, "topic": "String Hashing", "question_ids": ["longest-substring", "word-break"]},
+          {"day": 5, "topic": "Design with Hash Maps", "question_ids": ["lru-cache"]},
+          {"day": 6, "topic": "Pattern Review", "question_ids": ["valid-parentheses"]},
+          {"day": 7, "topic": "Rest / Catch Up", "question_ids": []}
+        ]
+      },
+      {
+        "week": 3,
+        "theme": "Binary Search & Sorting",
+        "days": [
+          {"day": 1, "topic": "Binary Search Basics", "question_ids": ["binary-search"]},
+          {"day": 2, "topic": "Search on Answer", "question_ids": ["median-sorted-arrays"]},
+          {"day": 3, "topic": "Sorting Applications", "question_ids": ["merge-intervals", "3sum"]},
+          {"day": 4, "topic": "Matrix Operations", "question_ids": ["rotate-image"]},
+          {"day": 5, "topic": "Binary Search + DP", "question_ids": ["longest-increasing-subsequence"]},
+          {"day": 6, "topic": "Pattern Review", "question_ids": ["best-time-to-buy-sell-stock"]},
+          {"day": 7, "topic": "Rest / Catch Up", "question_ids": []}
+        ]
+      },
+      {
+        "week": 4,
+        "theme": "Trees & Recursion",
+        "days": [
+          {"day": 1, "topic": "Tree Traversal", "question_ids": ["max-depth-binary-tree", "invert-binary-tree"]},
+          {"day": 2, "topic": "BST Properties", "question_ids": ["validate-bst"]},
+          {"day": 3, "topic": "Recursive Patterns", "question_ids": ["reverse-linked-list", "merge-two-sorted-lists"]},
+          {"day": 4, "topic": "Backtracking Intro", "question_ids": ["combination-sum"]},
+          {"day": 5, "topic": "Tree Review", "question_ids": ["max-depth-binary-tree"]},
+          {"day": 6, "topic": "Rest / Catch Up", "question_ids": []},
+          {"day": 7, "topic": "Rest / Catch Up", "question_ids": []}
+        ]
+      },
+      {
+        "week": 5,
+        "theme": "Graphs & BFS/DFS",
+        "days": [
+          {"day": 1, "topic": "DFS on Grids", "question_ids": ["number-of-islands"]},
+          {"day": 2, "topic": "Topological Sort", "question_ids": ["course-schedule"]},
+          {"day": 3, "topic": "BFS Shortest Path", "question_ids": ["word-ladder"]},
+          {"day": 4, "topic": "Graph Review", "question_ids": ["number-of-islands", "course-schedule"]},
+          {"day": 5, "topic": "Linked List as Graph", "question_ids": ["linked-list-cycle"]},
+          {"day": 6, "topic": "Rest / Catch Up", "question_ids": []},
+          {"day": 7, "topic": "Rest / Catch Up", "question_ids": []}
+        ]
+      },
+      {
+        "week": 6,
+        "theme": "Dynamic Programming",
+        "days": [
+          {"day": 1, "topic": "1D DP Basics", "question_ids": ["climbing-stairs", "coin-change"]},
+          {"day": 2, "topic": "DP on Strings", "question_ids": ["word-break"]},
+          {"day": 3, "topic": "DP on Sequences", "question_ids": ["longest-increasing-subsequence", "maximum-subarray"]},
+          {"day": 4, "topic": "DP on Arrays", "question_ids": ["best-time-to-buy-sell-stock"]},
+          {"day": 5, "topic": "Hard DP", "question_ids": ["trapping-rain-water"]},
+          {"day": 6, "topic": "Full Review", "question_ids": ["two-sum", "merge-intervals"]},
+          {"day": 7, "topic": "Rest / Final Review", "question_ids": []}
+        ]
+      }
+    ]
+  },
+  {
+    "id": "quick-start-2week",
+    "title": "Quick Start — 2 Week Crash Course",
+    "description": "Interview in 2 weeks? Hit the highest-frequency problems fast. 3 problems/day, most impactful topics only.",
+    "duration_weeks": 2,
+    "questions_per_day": 3,
+    "weeks": [
+      {
+        "week": 1,
+        "theme": "Core Essentials",
+        "days": [
+          {"day": 1, "topic": "Arrays & Hash Maps", "question_ids": ["two-sum", "contains-duplicate", "best-time-to-buy-sell-stock"]},
+          {"day": 2, "topic": "Strings & Arrays", "question_ids": ["valid-anagram", "valid-parentheses", "maximum-subarray"]},
+          {"day": 3, "topic": "Two Pointers & Search", "question_ids": ["3sum", "binary-search", "container-with-most-water"]},
+          {"day": 4, "topic": "Linked Lists", "question_ids": ["reverse-linked-list", "merge-two-sorted-lists", "linked-list-cycle"]},
+          {"day": 5, "topic": "Trees", "question_ids": ["max-depth-binary-tree", "invert-binary-tree", "validate-bst"]},
+          {"day": 6, "topic": "Graphs", "question_ids": ["number-of-islands", "course-schedule"]},
+          {"day": 7, "topic": "Rest / Review", "question_ids": []}
+        ]
+      },
+      {
+        "week": 2,
+        "theme": "Medium & Hard Patterns",
+        "days": [
+          {"day": 1, "topic": "DP Essentials", "question_ids": ["climbing-stairs", "coin-change", "word-break"]},
+          {"day": 2, "topic": "Sliding Window & Strings", "question_ids": ["longest-substring", "group-anagrams", "min-window-substring"]},
+          {"day": 3, "topic": "Intervals & Sorting", "question_ids": ["merge-intervals", "product-except-self", "rotate-image"]},
+          {"day": 4, "topic": "DP & Sequences", "question_ids": ["longest-increasing-subsequence", "maximum-subarray", "best-time-to-buy-sell-stock"]},
+          {"day": 5, "topic": "Design & Hard", "question_ids": ["lru-cache", "trapping-rain-water", "combination-sum"]},
+          {"day": 6, "topic": "Mock Interview", "question_ids": ["median-sorted-arrays", "word-ladder"]},
+          {"day": 7, "topic": "Final Review", "question_ids": []}
+        ]
+      }
+    ]
+  }
+]

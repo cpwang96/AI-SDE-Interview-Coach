@@ -63,6 +63,12 @@ export default function Home() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => navigate('/study')}
+            style={{ background: 'var(--accent)', color: 'var(--bg-primary)', fontSize: 13, fontWeight: 600 }}
+          >
+            Study Plans
+          </button>
           {assessment?.study_plan && (
             <button
               onClick={() => setShowPlan(!showPlan)}
@@ -74,7 +80,7 @@ export default function Home() {
           {!assessment && (
             <button
               onClick={() => navigate('/assessment')}
-              style={{ background: 'var(--accent)', color: 'var(--bg-primary)', fontSize: 13, fontWeight: 600 }}
+              style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)', fontSize: 13 }}
             >
               Take Assessment
             </button>

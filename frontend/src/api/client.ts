@@ -124,3 +124,23 @@ export function executeCode(code: string, language: string) {
     { method: 'POST', body: JSON.stringify({ code, language }) },
   );
 }
+
+// Study plans
+export function getStudyPlans() {
+  return request<any[]>('/study/plans');
+}
+
+export function getStudyPlan(planId: string) {
+  return request<any>(`/study/plans/${planId}`);
+}
+
+export function getStudyProgress(planId: string, userId: string = 'default') {
+  return request<any>(`/study/plans/${planId}/progress?user_id=${userId}`);
+}
+
+export function markQuestionComplete(planId: string, questionId: string, userId: string = 'default') {
+  return request<any>(`/study/plans/${planId}/complete`, {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId, question_id: questionId }),
+  });
+}
