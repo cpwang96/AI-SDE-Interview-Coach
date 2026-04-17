@@ -6,6 +6,7 @@ import ChatPanel from '../components/ChatPanel'
 import {
   startCodingSession, sendCodingMessage, executeCode,
   submitSolution, getLatestSubmission, getQuestions, markQuestionComplete,
+  getNote, saveNote,
 } from '../api/client'
 
 interface Message {
@@ -131,6 +132,9 @@ export default function CodingSession() {
   const [coachOpen, setCoachOpen]       = useState(false)
   const [unreadCoach, setUnreadCoach]   = useState(0)
   const [showDurationPicker, setShowDurationPicker] = useState(false)
+  const [note, setNote]                 = useState('')
+  const [noteSaved, setNoteSaved]       = useState(false)
+  const noteSaveTimer                   = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const timer = useTimer()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -144,6 +148,10 @@ export default function CodingSession() {
       setSessionId(res.session_id)
       setQuestion(res.question)
       setMessages([{ role: 'assistant', content: res.coach_message }])
+      // Load saved note for this question
+      if (res.question.id) {
+        getNote(res.question.id).then(r => setNote(r.note)).catch(() => {})
+      }
       if (res.question.id) {
         try {
           const sub = await getLatestSubmission(res.question.id)
@@ -221,6 +229,19 @@ export default function CodingSession() {
     const next = pool[Math.floor(Math.random() * pool.length)]
     if (next) navigate(`/coding?id=${next.id}`)
   }, [allQuestions, question, navigate])
+
+  const handleNoteChange = (value: string) => {
+    setNote(value)
+    setNoteSaved(false)
+    if (noteSaveTimer.current) clearTimeout(noteSaveTimer.current)
+    noteSaveTimer.current = setTimeout(() => {
+      if (question?.id) {
+        saveNote(question.id, value)
+          .then(() => { setNoteSaved(true); setTimeout(() => setNoteSaved(false), 2000) })
+          .catch(() => {})
+      }
+    }, 800)
+  }
 
   const toggleCoach = () => {
     setCoachOpen(prev => !prev)
@@ -394,6 +415,40 @@ export default function CodingSession() {
                   ))}
                 </div>
                 <ReactMarkdown>{formatQuestionMd(question)}</ReactMarkdown>
+
+                {/* Notes */}
+                <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      📝 My Notes
+                    </span>
+                    {noteSaved && (
+                      <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 600 }}>Saved ✓</span>
+                    )}
+                  </div>
+                  <textarea
+                    value={note}
+                    onChange={e => handleNoteChange(e.target.value)}
+                    placeholder="Approach, complexity, edge cases, gotchas…"
+                    style={{
+                      width: '100%',
+                      minHeight: 100,
+                      padding: '10px 12px',
+                      background: 'var(--bg-surface)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontFamily: 'inherit',
+                      lineHeight: 1.6,
+                      resize: 'vertical',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                    onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
+                    onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+                  />
+                </div>
               </div>
             )}
           </div>

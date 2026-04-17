@@ -1,4 +1,5 @@
-import Editor from '@monaco-editor/react'
+import { useRef, useEffect } from 'react'
+import Editor, { OnMount } from '@monaco-editor/react'
 
 interface CodeEditorProps {
   code: string
@@ -8,10 +9,10 @@ interface CodeEditorProps {
   onRun: () => void
   onSubmit: () => void
   onNext: () => void
-  output: string | null          // unused — kept for API compat
+  output: string | null          // unused — output shown in left panel
   running: boolean
   submitting: boolean
-  submitResult?: any | null      // unused — kept for API compat
+  submitResult?: any | null      // unused — result shown in left panel
 }
 
 const LANGUAGES = [
@@ -30,6 +31,25 @@ export default function CodeEditor({
   running,
   submitting,
 }: CodeEditorProps) {
+  // Keep refs so Monaco keybindings always call the latest version
+  const onRunRef    = useRef(onRun)
+  const onSubmitRef = useRef(onSubmit)
+  useEffect(() => { onRunRef.current    = onRun    }, [onRun])
+  useEffect(() => { onSubmitRef.current = onSubmit }, [onSubmit])
+
+  const handleMount: OnMount = (editor, monaco) => {
+    // Ctrl/Cmd+Enter → Run
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
+      () => onRunRef.current(),
+    )
+    // Ctrl/Cmd+Shift+Enter → Submit
+    editor.addCommand(
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter,
+      () => onSubmitRef.current(),
+    )
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg-primary)' }}>
 
@@ -57,7 +77,10 @@ export default function CodeEditor({
           ))}
         </select>
 
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)', marginRight: 4, userSelect: 'none' }}>
+            ⌘↵ run · ⌘⇧↵ submit
+          </span>
           <button
             onClick={onRun}
             disabled={running || submitting}
@@ -101,6 +124,7 @@ export default function CodeEditor({
           value={code}
           onChange={v => onChange(v || '')}
           theme="vs-dark"
+          onMount={handleMount}
           options={{
             fontSize: 14,
             minimap: { enabled: false },

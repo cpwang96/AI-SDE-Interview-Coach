@@ -146,6 +146,18 @@ export function getStudyProgress(planId: string, userId: string = 'default') {
   return request<any>(`/study/plans/${planId}/progress?user_id=${userId}`);
 }
 
+// Notes
+export function getNote(questionId: string, userId: string = 'default') {
+  return request<{ note: string }>(`/notes/${questionId}?user_id=${userId}`);
+}
+
+export function saveNote(questionId: string, note: string, userId: string = 'default') {
+  return request<{ ok: boolean }>(`/notes/${questionId}`, {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId, note }),
+  });
+}
+
 export function startStudyPlan(planId: string, userId: string = 'default') {
   return request<any>(`/study/plans/${planId}/start`, {
     method: 'POST',
