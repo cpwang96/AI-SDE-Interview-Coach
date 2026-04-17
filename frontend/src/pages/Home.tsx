@@ -50,9 +50,7 @@ export default function Home() {
   const diffColor = (d: string) =>
     d === 'easy' ? 'var(--green)' : d === 'medium' ? 'var(--yellow)' : 'var(--red)'
   const diffBg = (d: string) =>
-    d === 'easy'   ? 'rgba(74,222,128,0.1)'
-    : d === 'medium' ? 'rgba(251,191,36,0.1)'
-    : 'rgba(248,113,113,0.1)'
+    d === 'easy' ? 'var(--green-dim)' : d === 'medium' ? 'var(--yellow-dim)' : 'var(--red-dim)'
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -137,9 +135,9 @@ export default function Home() {
             </div>
 
             {[
-              { label: 'Easy',   count: easyCount,  color: 'var(--green)',  glow: 'rgba(74,222,128,0.12)'  },
-              { label: 'Medium', count: medCount,   color: 'var(--yellow)', glow: 'rgba(251,191,36,0.12)'  },
-              { label: 'Hard',   count: hardCount,  color: 'var(--red)',    glow: 'rgba(248,113,113,0.12)' },
+              { label: 'Easy',   count: easyCount,  color: 'var(--green)',  glow: 'var(--green-dim)'  },
+              { label: 'Medium', count: medCount,   color: 'var(--yellow)', glow: 'var(--yellow-dim)'  },
+              { label: 'Hard',   count: hardCount,  color: 'var(--red)',    glow: 'var(--red-dim)' },
             ].map(({ label, count, color, glow }) => (
               <div key={label} className="stat-card" style={{
                 flex: 1,
@@ -366,7 +364,7 @@ export default function Home() {
                     {q.frequency === 'high' && (
                       <span style={{
                         fontSize: 9, fontWeight: 800, letterSpacing: 0.5,
-                        color: 'var(--red)', background: 'rgba(248,113,113,0.1)',
+                        color: 'var(--red)', background: 'var(--red-dim)',
                         padding: '1px 6px', borderRadius: 4,
                       }}>HOT</span>
                     )}

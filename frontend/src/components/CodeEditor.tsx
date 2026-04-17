@@ -1,5 +1,17 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import Editor, { OnMount } from '@monaco-editor/react'
+
+/** Tracks system dark/light preference and updates when it changes. */
+function useColorScheme() {
+  const [dark, setDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = (e: MediaQueryListEvent) => setDark(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return dark
+}
 
 interface CodeEditorProps {
   code: string
@@ -31,6 +43,8 @@ export default function CodeEditor({
   running,
   submitting,
 }: CodeEditorProps) {
+  const isDark = useColorScheme()
+
   // Keep refs so Monaco keybindings always call the latest version
   const onRunRef    = useRef(onRun)
   const onSubmitRef = useRef(onSubmit)
@@ -123,7 +137,7 @@ export default function CodeEditor({
           language={language === 'java' ? 'java' : language}
           value={code}
           onChange={v => onChange(v || '')}
-          theme="vs-dark"
+          theme={isDark ? 'vs-dark' : 'vs'}
           onMount={handleMount}
           options={{
             fontSize: 14,
