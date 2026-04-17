@@ -20,6 +20,9 @@ LeetCode Premium isn't customized enough. This tool adapts to **your** skill lev
 - **Filter by** difficulty, algorithm, company, frequency, and category
 - **Category pills** — one-click filter row (Arrays, Trees, DP, Graphs, …) above the question list
 - **Dynamic question generation** — Claude generates new problems on any topic / difficulty
+- **Personal notes per question** — text area below the problem; auto-saves 800 ms after you stop typing; persists across sessions
+- **Keyboard shortcuts** — `Ctrl/Cmd+Enter` → Run · `Ctrl/Cmd+Shift+Enter` → Submit (hint shown in toolbar)
+- **"Needs Review" flag** 🔖 — one-click bookmark in the nav bar; flagged questions show 🔖 on the home page for quick identification
 - Last submitted code reloads automatically when reopening a question
 
 ### Study Plans
@@ -38,7 +41,7 @@ LeetCode Premium isn't customized enough. This tool adapts to **your** skill lev
 
 ### Progress Tracking
 - Submission history persisted per user (code, language, pass rate, timestamp)
-- Green ✓ on homepage for solved questions
+- Green ✓ on homepage for solved questions; 🔖 for flagged / needs-review questions
 - Study plan progress with per-week / per-day completion counts and a gradient progress bar
 - Streak + day-number shown prominently in the plan motivation bar
 
@@ -170,6 +173,10 @@ npm run dev
 | GET | `/api/study/plans/{id}/progress` | Get progress + computed stats (streak, today's day, on-track status) |
 | POST | `/api/study/plans/{id}/start` | Record plan start date (idempotent) |
 | POST | `/api/study/plans/{id}/complete` | Toggle question done / undone + update streak |
+| GET  | `/api/notes/{question_id}` | Get note + flag state for a question |
+| POST | `/api/notes/{question_id}` | Save note (clears if empty) |
+| POST | `/api/notes/{question_id}/flag` | Toggle "needs review" flag |
+| GET  | `/api/notes/flags` | Get all flagged question IDs |
 | POST | `/api/execute/run` | Run code without test cases |
 
 ## License

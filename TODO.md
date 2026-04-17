@@ -19,6 +19,10 @@
 - [x] **Auto-mark complete on passing submit** — from study plan → all tests pass → checkbox auto-ticks
 - [x] **Toggle completion** — unmark a done problem by clicking the checkbox again
 - [x] **Back to study plan** context — "← Study Plan" when entering from plan
+- [x] **Personal notes per question** — auto-saves 800 ms after typing, persists per question
+- [x] **Keyboard shortcuts** — Ctrl/Cmd+Enter → Run, Ctrl/Cmd+Shift+Enter → Submit
+- [x] **"Needs Review" flag** 🔖 — toggle in nav bar, shown on home page list
+- [x] **Next button page reload bug** — React Router reused same component instance across query-param nav; fixed with `key={search}` wrapper in App.tsx
 
 ---
 
