@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -5,19 +7,31 @@
 }
 
 :root {
-  --bg-primary: #1e1e2e;
-  --bg-secondary: #181825;
-  --bg-surface: #313244;
-  --bg-hover: #45475a;
-  --text-primary: #cdd6f4;
-  --text-secondary: #a6adc8;
-  --text-muted: #6c7086;
-  --accent: #89b4fa;
-  --accent-hover: #74c7ec;
-  --green: #a6e3a1;
-  --yellow: #f9e2af;
-  --red: #f38ba8;
-  --border: #45475a;
+  /* ── Backgrounds ─────────────────────── */
+  --bg-primary:   #08080f;   /* near-true black, slight blue tint */
+  --bg-secondary: #0d0d18;
+  --bg-surface:   #13132b;   /* card / panel background */
+  --bg-hover:     #1a1a38;
+
+  /* ── Text ────────────────────────────── */
+  --text-primary:   #f0f4ff;
+  --text-secondary: #9da8c7;
+  --text-muted:     #4a5280;
+
+  /* ── Accent — rich indigo ────────────── */
+  --accent:        #6366f1;
+  --accent-light:  #818cf8;
+  --accent-dim:    rgba(99,102,241,0.18);
+  --accent-glow:   rgba(99,102,241,0.35);
+
+  /* ── Semantic ────────────────────────── */
+  --green:  #4ade80;
+  --yellow: #fbbf24;
+  --red:    #f87171;
+
+  /* ── Borders ─────────────────────────── */
+  --border:        rgba(99,102,241,0.14);
+  --border-bright: rgba(99,102,241,0.32);
 }
 
 body {
@@ -26,26 +40,48 @@ body {
   color: var(--text-primary);
   height: 100vh;
   overflow: hidden;
+  /* Subtle radial glow at top-left */
+  background-image:
+    radial-gradient(ellipse 800px 600px at -10% -10%, rgba(99,102,241,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 400px at 110% 110%, rgba(139,92,246,0.05) 0%, transparent 70%);
 }
 
 #root {
   height: 100vh;
 }
 
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
 button {
   cursor: pointer;
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
   font-size: 14px;
+  font-family: inherit;
   font-weight: 500;
-  transition: all 0.15s ease;
+  transition: all 0.18s ease;
 }
 
 button:hover {
   transform: translateY(-1px);
 }
 
+button:active {
+  transform: translateY(0);
+}
+
+/* Primary CTA — vibrant indigo gradient */
+button.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 0 20px rgba(99,102,241,0.3);
+}
+button.btn-primary:hover {
+  box-shadow: 0 0 28px rgba(99,102,241,0.5);
+}
+
+/* ── Inputs ──────────────────────────────────────────────────────────────── */
 input, textarea, select {
   background: var(--bg-surface);
   color: var(--text-primary);
@@ -53,27 +89,31 @@ input, textarea, select {
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 14px;
+  font-family: inherit;
   outline: none;
+  transition: border-color 0.15s;
 }
 
 input:focus, textarea:focus, select:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
 }
 
-::-webkit-scrollbar {
-  width: 6px;
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(99,102,241,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,102,241,0.45); }
+
+/* ── Gradient text utility ───────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #f0f4ff 0%, #a5b4fc 60%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--bg-hover);
-  border-radius: 3px;
-}
-
-/* Markdown styles for problem descriptions */
+/* ── Markdown body ───────────────────────────────────────────────────────── */
 .markdown-body {
   color: var(--text-primary);
   font-size: 14px;
@@ -90,17 +130,16 @@ input:focus, textarea:focus, select:focus {
   border-bottom: 1px solid var(--border);
 }
 
-.markdown-body p {
-  margin-bottom: 12px;
-}
+.markdown-body p { margin-bottom: 12px; }
 
 .markdown-body code {
   background: var(--bg-surface);
+  border: 1px solid var(--border);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 13px;
-  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-  color: var(--accent);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  color: var(--accent-light);
 }
 
 .markdown-body pre {
@@ -114,6 +153,7 @@ input:focus, textarea:focus, select:focus {
 
 .markdown-body pre code {
   background: none;
+  border: none;
   padding: 0;
   color: var(--text-primary);
   font-size: 13px;
@@ -134,11 +174,27 @@ input:focus, textarea:focus, select:focus {
   margin-bottom: 12px;
 }
 
-.markdown-body li {
-  margin-bottom: 4px;
-}
+.markdown-body li { margin-bottom: 4px; }
 
 .markdown-body strong {
   color: var(--text-primary);
   font-weight: 600;
+}
+
+/* ── Question row hover ──────────────────────────────────────────────────── */
+.q-row {
+  transition: background 0.12s ease !important;
+}
+.q-row:hover {
+  background: rgba(99,102,241,0.07) !important;
+  transform: none !important;
+}
+
+/* ── Stat card ───────────────────────────────────────────────────────────── */
+.stat-card {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(99,102,241,0.15);
 }
