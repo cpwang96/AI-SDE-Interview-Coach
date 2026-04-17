@@ -146,6 +146,13 @@ export function getStudyProgress(planId: string, userId: string = 'default') {
   return request<any>(`/study/plans/${planId}/progress?user_id=${userId}`);
 }
 
+export function startStudyPlan(planId: string, userId: string = 'default') {
+  return request<any>(`/study/plans/${planId}/start`, {
+    method: 'POST',
+    body: JSON.stringify({ user_id: userId }),
+  });
+}
+
 export function markQuestionComplete(planId: string, questionId: string, userId: string = 'default') {
   return request<any>(`/study/plans/${planId}/complete`, {
     method: 'POST',

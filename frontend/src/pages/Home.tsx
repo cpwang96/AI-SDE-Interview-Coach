@@ -15,6 +15,7 @@ export default function Home() {
   const [algorithm, setAlgorithm] = useState('')
   const [company, setCompany] = useState('')
   const [frequency, setFrequency] = useState('')
+  const [category, setCategory] = useState('')
   const [solved, setSolved] = useState<Set<string>>(new Set())
   const [assessment, setAssessment] = useState<any>(null)
   const [showPlan, setShowPlan] = useState(false)
@@ -35,8 +36,9 @@ export default function Home() {
     if (algorithm) filters.topic = algorithm
     if (company) filters.company = company
     if (frequency) filters.frequency = frequency
+    if (category) filters.category = category
     getQuestions(Object.keys(filters).length ? filters : undefined).then(setQuestions).catch(() => {})
-  }, [difficulty, algorithm, company, frequency])
+  }, [difficulty, algorithm, company, frequency, category])
 
   const difficultyColor = (d: string) =>
     d === 'easy' ? 'var(--green)' : d === 'medium' ? 'var(--yellow)' : 'var(--red)'
@@ -202,6 +204,25 @@ export default function Home() {
               >
                 Random
               </button>
+            </div>
+
+            {/* Category pills */}
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+              {['', ...filterOptions.categories].map(cat => (
+                <button
+                  key={cat || '__all__'}
+                  onClick={() => setCategory(cat === category ? '' : cat)}
+                  style={{
+                    padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                    background: category === cat ? 'var(--accent)' : 'var(--bg-surface)',
+                    color: category === cat ? '#fff' : 'var(--text-muted)',
+                    border: `1px solid ${category === cat ? 'var(--accent)' : 'var(--border)'}`,
+                    cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+                  }}
+                >
+                  {cat || 'All'}
+                </button>
+              ))}
             </div>
 
             {/* Question table */}

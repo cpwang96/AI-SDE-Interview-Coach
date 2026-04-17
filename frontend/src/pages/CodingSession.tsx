@@ -5,7 +5,7 @@ import CodeEditor from '../components/CodeEditor'
 import ChatPanel from '../components/ChatPanel'
 import {
   startCodingSession, sendCodingMessage, executeCode,
-  submitSolution, getLatestSubmission, getQuestions,
+  submitSolution, getLatestSubmission, getQuestions, markQuestionComplete,
 } from '../api/client'
 
 interface Message {
@@ -113,6 +113,8 @@ export default function CodingSession() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const questionId = searchParams.get('id') || undefined
+  const fromStudy = searchParams.get('from') === 'study'
+  const studyPlanId = searchParams.get('plan') || null
 
   const [sessionId, setSessionId]       = useState<string | null>(null)
   const [question, setQuestion]         = useState<any>(null)
@@ -204,6 +206,10 @@ export default function CodingSession() {
       const res = await submitSolution(sessionId, code, language, question.id)
       setSubmitResult(res)
       setOutput(res.stdout + (res.stderr ? '\n' + res.stderr : ''))
+      // Auto-mark complete in study plan on a passing submission
+      if (res.all_passed && fromStudy && studyPlanId) {
+        markQuestionComplete(studyPlanId, question.id).catch(() => {})
+      }
     } catch { setOutput('Error submitting solution') }
     setSubmitting(false)
   }
@@ -263,10 +269,10 @@ export default function CodingSession() {
         {/* Left */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(fromStudy ? '/study' : '/')}
             style={{ background: 'transparent', color: 'var(--text-muted)', fontSize: 13, padding: '4px 8px', border: '1px solid var(--border)', borderRadius: 6 }}
           >
-            ← Problems
+            {fromStudy ? '← Study Plan' : '← Problems'}
           </button>
           {question && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -425,19 +431,43 @@ export default function CodingSession() {
             )}
 
             {/* Console output */}
-            <div style={{ padding: '10px 16px', maxHeight: 200, minHeight: 80, overflowY: 'auto' }}>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-                {running ? 'Running…' : submitting ? 'Testing…' : 'Console'}
-              </div>
-              {output !== null ? (
-                <pre style={{ fontSize: 12, color: 'var(--text-primary)', whiteSpace: 'pre-wrap', fontFamily: 'monospace', margin: 0, lineHeight: 1.6 }}>
-                  {output}
-                </pre>
-              ) : (
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                  {running || submitting ? '' : 'Run code or submit to see results here.'}
+            <div style={{ maxHeight: 200, minHeight: 80, overflowY: 'auto' }}>
+              {/* Compilation error banner */}
+              {output !== null && (() => {
+                const isCompileError =
+                  output.includes('Compilation Error') ||
+                  (output.includes('error:') && (output.includes('.java:') || output.includes('.py:'))) ||
+                  output.startsWith('SyntaxError') ||
+                  output.includes('IndentationError')
+                return isCompileError ? (
+                  <div style={{
+                    padding: '7px 16px',
+                    background: 'rgba(239,68,68,0.15)',
+                    borderBottom: '1px solid rgba(239,68,68,0.3)',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}>
+                    <span style={{ fontSize: 13 }}>⚠️</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--red)', letterSpacing: 0.2 }}>
+                      Compilation Error — fix syntax and try again
+                    </span>
+                  </div>
+                ) : null
+              })()}
+
+              <div style={{ padding: '10px 16px' }}>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                  {running ? 'Running…' : submitting ? 'Testing…' : 'Console'}
                 </div>
-              )}
+                {output !== null ? (
+                  <pre style={{ fontSize: 12, color: 'var(--text-primary)', whiteSpace: 'pre-wrap', fontFamily: 'monospace', margin: 0, lineHeight: 1.6 }}>
+                    {output}
+                  </pre>
+                ) : (
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    {running || submitting ? '' : 'Run code or submit to see results here.'}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

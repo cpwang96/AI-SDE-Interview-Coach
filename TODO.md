@@ -1,111 +1,112 @@
 # Interview Coach — Feature Backlog
 
-## 🔴 Bugs / Must Fix
-- [x] Java test runner — was 0/0 because no runner was appended
-- [x] `public class Solution` collision with `public class Main` in Java
-- [x] `expected_output` vs `expected` key mismatch in new questions
-- [x] Output panel invisible (Monaco filled 100% height, pushed output off-screen)
-- [x] Auto-coach trigger on submit (now coach is manual only)
+## ✅ Done
+
+- [x] Java test runner — was 0/0, now appends full `Main` class with test harness
+- [x] `public class Solution` collision with `public class Main` in Java — strip `public` from user's class
+- [x] `expected_output` vs `expected` key mismatch in new questions — `_get_expected()` helper
+- [x] Output panel invisible — Monaco filled 100% height, pushed output off-screen → fixed with LeetCode layout
+- [x] Auto-coach trigger on submit — coach is now manual-only
+- [x] **Interview timer** — 20/30/45/60 min presets, yellow < 10 min, red < 5 min, pauses on solve
+- [x] **Next Question button** — random same-difficulty, shown in nav and in result banner
+- [x] **Compilation error banner** — red ⚠️ header when Java/Python fails to compile
+- [x] **Category pills on homepage** — one-click filter row above the question list
+- [x] **LeetCode-style layout** — problem + output left, full-height editor right, resizable
+- [x] **Study plan streak tracking** — 🔥 consecutive days, resets on skip
+- [x] **Today's Mission card** — highlights today's problems with Solve → CTA
+- [x] **On-track / behind status** — past-incomplete count with color-coded banner
+- [x] **Color-coded timeline** — ✅ done · 🔶 partial · 🔴 overdue · ▶ today · ○ future
+- [x] **Auto-mark complete on passing submit** — from study plan → all tests pass → checkbox auto-ticks
+- [x] **Toggle completion** — unmark a done problem by clicking the checkbox again
+- [x] **Back to study plan** context — "← Study Plan" when entering from plan
 
 ---
 
-## 🟠 High Priority — Core Coding UX
+## 🟠 High Priority — Coding Session UX
 
-### 1. Interview Timer
-Start a countdown when you begin a problem. Real interviews are 45 min.
-- Visible countdown in the header (e.g. `⏱ 38:22`)
-- Optional — user sets duration (30 / 45 / 60 min)
-- Turns red in last 5 min
-- Records time taken in submission history
+### 1. Personal Notes Per Question
+A small text area per question for jotting approach notes, complexity, gotchas.
+Saved locally per question. Visible below the problem statement.
+**Why:** You'll forget your own insights. Notes make revision 10× faster.
 
-### 2. "Next Question" Button
-After submitting, show "Next →" (next in study plan or random same difficulty).
-No need to go back to the home page between problems.
-
-### 3. Compilation Error UX
-When Java/Python has a syntax error, show a red "Compilation Error" banner
-at the top of the output panel instead of just dumping stderr.
-
-### 4. Category Quick-Filter on Homepage
-Currently categories are in the filter dropdown but users still scroll through 79.
-Add a horizontal category pill row (Array · Tree · DP · Graph · …) that one-click
-filters the list.
-
----
-
-## 🟡 Medium Priority — Progress & Study
-
-### 5. Interview Timer History
-Save `time_taken_seconds` in each submission. Show it on the submission record
-and on the homepage (e.g. "Solved in 23 min").
-
-### 6. "Needs Review" Flag
+### 2. "Needs Review" Flag
 Let users mark questions they want to revisit (separate from pass/fail).
-Show a 🔖 icon on the homepage for flagged questions.
-Useful for: "I solved it but used a suboptimal approach."
+Show a 🔖 bookmark icon on the homepage for flagged questions.
+**Why:** "I solved it but used O(n²) when O(n) was possible" — currently no way to track this.
 
-### 7. Personal Notes Per Question
-A small text area per question for jotting approach notes or gotchas.
-Saved locally (JSON). Visible when you reopen the question.
+### 3. Keyboard Shortcuts
+- `Ctrl+Enter` → Run
+- `Ctrl+Shift+Enter` → Submit
+- `Ctrl+\`` → Focus editor
+**Why:** Removes friction. Muscle memory matters in real interviews.
 
-### 8. Spaced Repetition in Study Plans
-Questions that failed come back sooner.
-Simple algorithm: failed → retry in 1 day, passed → retry in 3/7/14 days.
-Show a "Due today" count on the homepage.
+### 4. Submission History Viewer Per Question
+Show past attempts for the current question in the left panel (expandable).
+Each entry: date, language, pass rate, elapsed time.
+**Why:** Lets you see how you've improved on a problem over time.
 
-### 9. Streak Tracker
-Track daily practice streak (consecutive days with at least 1 submission).
-Show streak on homepage: 🔥 7-day streak.
+---
+
+## 🟡 Medium Priority — Learning Quality
+
+### 5. Reference Solution Reveal
+After 3+ failed attempts (or explicit request), show a reference solution with explanation.
+Collapsed behind a button. Could start with top 20 most common problems.
+**Why:** There's a point where you need to see the answer to make progress.
+
+### 6. Complexity Self-Report
+After submitting, show a field: "Your time complexity:" / "Your space complexity:"
+Coach can confirm or correct if open.
+**Why:** Forces you to articulate it — exactly what happens in real interviews.
+
+### 7. Difficulty Self-Rating After Solving
+"How hard was this for you?" 😅 Hard / 😐 Medium / 😊 Easy
+Used to tune which problems show up in spaced repetition.
+**Why:** Objective difficulty (Easy/Medium/Hard) doesn't match your personal difficulty.
+
+### 8. Spaced Repetition
+Questions that failed come back sooner; passed ones space out.
+Simple algorithm: failed → retry in 1 day, passed once → 3 days, passed twice → 7/14 days.
+Show "Due today" count on homepage.
+
+### 9. Mock Interview Mode
+Full 45-min mock: random problem + coach plays interviewer role, asks clarifying questions,
+gives hints only when stuck, scores communication + code quality at the end.
+Uses the existing coach with a different system prompt.
+**Why:** Most realistic practice for the actual interview format.
 
 ---
 
 ## 🟢 Nice to Have — Content & Polish
 
-### 10. Reference Solution Reveal
-After 3+ failed attempts, offer to show a reference solution with explanation.
-Pre-written (no API credits needed). Collapsed by default behind a button.
-Could start with just the top 20 most common problems.
+### 10. Company Tag Improvement
+Company tags on 47 new questions are mostly empty.
+Add standard company associations (Google → LRU Cache, Amazon → Two Sum, etc.).
 
-### 11. Complexity Annotation
-After submitting, show a text field: "Your time/space complexity is: ___"
-User self-reports. Coach can verify if open.
+### 11. "Similar Problems" Sidebar
+When on a tree problem, show "3 other DFS problems you've solved".
+Tag similar problems by pattern, not just category.
 
-### 12. Difficulty Rating After Solving
-"How hard was this for you?" 😅 Hard / 😐 Medium / 😊 Easy
-Used to tune study plan suggestions.
+### 12. Timer History in Submissions
+Save `time_taken_seconds` in each submission record.
+Show "Solved in 23 min" on the homepage solved indicator.
 
-### 13. Company Tag Filtering Improvement
-Current company tags on the new 47 questions are missing (they defaulted to empty).
-Add company tags for the standard Blind 75 problems (e.g. Google asks LRU Cache, Amazon asks Two Sum).
-
-### 14. Dark/Light Mode Toggle
+### 13. Dark/Light Mode Toggle
 Currently locked to dark mode.
-
-### 15. Keyboard Shortcuts
-- `Ctrl+Enter` → Run
-- `Ctrl+Shift+Enter` → Submit  
-- `Ctrl+\`` → Focus editor
 
 ---
 
 ## 🔵 Bigger Features (Later)
 
-### 16. Mock Interview Mode
-Full 45-min mock: random problem + coach plays interviewer, asks clarifying
-questions, gives hints only when stuck, scores at the end.
-Uses the existing coach but with a different system prompt.
+### 14. Export Progress Report
+PDF / markdown summary: problems practiced, pass rates, time trends, weak areas.
+Useful to review before an actual interview week.
+
+### 15. LeetCode Import
+Paste a LeetCode URL → auto-scrape problem and add to your bank.
+
+### 16. Company-Specific Practice Mode
+"Google loop prep" — only Google-tagged problems in frequency order.
 
 ### 17. Peer Comparison (Anonymous)
-"X% of users solved this in under 30 min" — motivational context.
-Could be synthetic/estimated at first.
-
-### 18. Export Progress Report
-PDF / markdown summary of what you've practiced, pass rates, weak areas.
-Useful before an actual interview week.
-
-### 19. LeetCode Import
-Paste a LeetCode URL → auto-scrape problem and add to your bank.
-(Would need a scraper or the unofficial LeetCode API.)
-
-### 20. Company-Specific Practice Mode
-"Google loop prep" — pulls only Google-tagged problems in likely frequency order.
+"X% of users solved this under 30 min" — synthetic / estimated for motivation.
