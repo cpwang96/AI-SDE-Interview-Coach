@@ -7,6 +7,7 @@ interface CodeEditorProps {
   onLanguageChange: (lang: string) => void
   onRun: () => void
   onSubmit: () => void
+  onNext: () => void
   output: string | null
   running: boolean
   submitting: boolean
@@ -26,6 +27,7 @@ export default function CodeEditor({
   onLanguageChange,
   onRun,
   onSubmit,
+  onNext,
   output,
   running,
   submitting,
@@ -133,9 +135,26 @@ export default function CodeEditor({
                 : `✗ ${submitResult.passed}/${submitResult.total} test cases passed`
               }
             </span>
-            {submitResult.time_ms && (
-              <span style={{ fontWeight: 400, fontSize: 12, opacity: 0.8 }}>{submitResult.time_ms}ms</span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {submitResult.time_ms && (
+                <span style={{ fontWeight: 400, fontSize: 12, opacity: 0.7 }}>{submitResult.time_ms}ms</span>
+              )}
+              <button
+                onClick={onNext}
+                style={{
+                  background: submitResult.all_passed ? 'var(--green)' : 'var(--bg-surface)',
+                  color: submitResult.all_passed ? 'var(--bg-primary)' : 'var(--text-primary)',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  padding: '3px 12px',
+                  borderRadius: 4,
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Next →
+              </button>
+            </div>
           </div>
         )}
 
