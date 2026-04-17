@@ -121,19 +121,22 @@ def start_session(req: StartSessionRequest):
     }
 
 
+def _get_expected(tc: dict):
+    """Normalize test case — support both 'expected' and 'expected_output' keys."""
+    return tc.get("expected_output", tc.get("expected"))
+
+
 def _build_test_runner_python(func_name: str, test_cases: list[dict]) -> str:
     """Auto-generate a Python test runner from test_cases."""
     lines = ["", "", "# --- Auto-generated test runner ---"]
-    lines.append("import json")
     lines.append("def _run_tests():")
     lines.append("    _passed = 0")
     lines.append(f"    _total = {len(test_cases)}")
 
     for i, tc in enumerate(test_cases):
         args = ", ".join(repr(v) for v in tc["input"].values())
-        expected = repr(tc["expected"])
+        expected = repr(_get_expected(tc))
         lines.append(f"    _result = {func_name}({args})")
-        # Sort lists for comparison if both are lists
         lines.append(f"    _exp = {expected}")
         lines.append(f"    _eq = (sorted(_result) == sorted(_exp)) if isinstance(_result, list) and isinstance(_exp, list) else (_result == _exp)")
         lines.append(f'    _status = "PASS" if _eq else "FAIL"')
@@ -153,7 +156,7 @@ def _build_test_runner_js(func_name: str, test_cases: list[dict]) -> str:
 
     for i, tc in enumerate(test_cases):
         args = ", ".join(_js_repr(v) for v in tc["input"].values())
-        expected = _js_repr(tc["expected"])
+        expected = _js_repr(_get_expected(tc))
         lines.append(f"  const r{i} = {func_name}({args});")
         lines.append(f"  const e{i} = {expected};")
         lines.append(f"  const ok{i} = JSON.stringify(Array.isArray(r{i}) ? [...r{i}].sort() : r{i}) === JSON.stringify(Array.isArray(e{i}) ? [...e{i}].sort() : e{i});")
@@ -171,17 +174,147 @@ def _js_repr(val) -> str:
     return json.dumps(val)
 
 
+def _java_type(val) -> str:
+    """Infer Java type from a Python value."""
+    if isinstance(val, bool):
+        return "boolean"
+    if isinstance(val, int):
+        return "int"
+    if isinstance(val, float):
+        return "double"
+    if isinstance(val, str):
+        return "String"
+    if isinstance(val, list):
+        if not val:
+            return "int[]"
+        if isinstance(val[0], list):
+            inner = val[0]
+            return "String[][]" if (inner and isinstance(inner[0], str)) else "int[][]"
+        if isinstance(val[0], str):
+            return "String[]"
+        if isinstance(val[0], bool):
+            return "boolean[]"
+        return "int[]"
+    return "Object"
+
+
+def _java_val(val) -> str:
+    """Convert a Python value to a Java literal expression."""
+    if val is None:
+        return "null"
+    if isinstance(val, bool):
+        return "true" if val else "false"
+    if isinstance(val, int):
+        return str(val)
+    if isinstance(val, float):
+        return str(val)
+    if isinstance(val, str):
+        escaped = val.replace("\\", "\\\\").replace('"', '\\"')
+        return f'"{escaped}"'
+    if isinstance(val, list):
+        if not val:
+            return "new int[]{}"
+        if isinstance(val[0], list):
+            inner_base = "String" if (val[0] and isinstance(val[0][0], str)) else "int"
+            rows = ", ".join(
+                f"new {inner_base}[]{{{', '.join(_java_val(x) for x in row)}}}"
+                for row in val
+            )
+            return f"new {inner_base}[][]{{{rows}}}"
+        if isinstance(val[0], str):
+            inner = ", ".join(f'"{x}"' for x in val)
+            return f"new String[]{{{inner}}}"
+        if isinstance(val[0], bool):
+            inner = ", ".join("true" if x else "false" for x in val)
+            return f"new boolean[]{{{inner}}}"
+        inner = ", ".join(str(x) for x in val)
+        return f"new int[]{{{inner}}}"
+    return str(val)
+
+
+def _java_equals(a: str, b: str, val) -> str:
+    """Generate Java equality expression for two variables."""
+    if isinstance(val, list):
+        if val and isinstance(val[0], list):
+            return f"java.util.Arrays.deepEquals({a}, {b})"
+        return f"java.util.Arrays.equals({a}, {b})"
+    if isinstance(val, str):
+        return f"{a}.equals({b})"
+    return f"({a} == {b})"
+
+
+def _java_to_str(var: str, val) -> str:
+    """Generate Java expression to convert a value to a display string."""
+    if isinstance(val, list):
+        if val and isinstance(val[0], list):
+            return f"java.util.Arrays.deepToString({var})"
+        return f"java.util.Arrays.toString({var})"
+    return f"String.valueOf({var})"
+
+
+def _build_test_runner_java(func_name: str, test_cases: list[dict]) -> str:
+    """Auto-generate a Java Main class test runner from test_cases."""
+    lines = ["", "", "public class Main {",
+             "    public static void main(String[] args) {",
+             "        Solution sol = new Solution();",
+             "        int passed = 0;",
+             f"        int total = {len(test_cases)};"]
+
+    for i, tc in enumerate(test_cases):
+        n = i + 1
+        expected = _get_expected(tc)
+        exp_type = _java_type(expected)
+        exp_lit = _java_val(expected)
+        exp_var = f"exp{n}"
+        res_var = f"res{n}"
+
+        # Declare input args
+        arg_vars = []
+        for j, (key, val) in enumerate(tc["input"].items()):
+            vname = f"a{n}_{j}"
+            lines.append(f"        {_java_type(val)} {vname} = {_java_val(val)};")
+            arg_vars.append(vname)
+
+        # Declare expected and call method
+        lines.append(f"        {exp_type} {exp_var} = {exp_lit};")
+        lines.append(f"        {exp_type} {res_var} = sol.{func_name}({', '.join(arg_vars)});")
+
+        # Compare and print
+        eq_expr = _java_equals(res_var, exp_var, expected)
+        res_str = _java_to_str(res_var, expected)
+        exp_str = _java_to_str(exp_var, expected)
+        input_display = ", ".join(str(v) for v in tc["input"].values())
+        lines.append(f"        boolean ok{n} = {eq_expr};")
+        lines.append(f"        if (ok{n}) passed++;")
+        lines.append(
+            f'        System.out.println("Test {n}: " + (ok{n} ? "PASS" : "FAIL")'
+            f' + " | Input: {input_display} | Expected: " + {exp_str} + " | Got: " + {res_str});'
+        )
+
+    lines.append(f'        System.out.println("\\n" + passed + "/{len(test_cases)} tests passed");')
+    lines.append("    }")
+    lines.append("}")
+    return "\n".join(lines)
+
+
 def _extract_func_name(code: str, language: str) -> str:
-    """Extract the main function name from starter code."""
+    """Extract the main function/method name from starter code."""
     import re
     if language == "python":
         match = re.search(r'^def\s+(\w+)\s*\(', code, re.MULTILINE)
         if match:
             return match.group(1)
-    elif language in ("javascript", "java"):
+    elif language == "javascript":
         match = re.search(r'function\s+(\w+)\s*\(', code)
         if match:
             return match.group(1)
+    elif language == "java":
+        # Match: public <ReturnType> methodName( — skip constructors and main
+        for m in re.finditer(r'public\s+[\w\[\]<>, ]+?\s+(\w+)\s*\(', code):
+            name = m.group(1)
+            if name not in ("Solution", "Main", "main", "Codec", "WordDictionary",
+                            "MedianFinder", "Trie", "LRUCache"):
+                return name
     return "solution"
 
 
@@ -228,6 +361,8 @@ def submit_solution(req: SubmitRequest):
             test_code += _build_test_runner_python(func_name, question["test_cases"])
         elif req.language == "javascript":
             test_code += _build_test_runner_js(func_name, question["test_cases"])
+        elif req.language == "java":
+            test_code += _build_test_runner_java(func_name, question["test_cases"])
 
     result = execute_code(test_code, req.language)
 

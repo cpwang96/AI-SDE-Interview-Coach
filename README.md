@@ -9,12 +9,13 @@ Leetcode Premium isn't customized enough. This tool adapts to **your** skill lev
 ## Features
 
 ### Coding Practice
-- **32 Blind75-style problems** across easy/medium/hard with 294 test cases (8-12 per problem including edge cases)
+- **79 Blind75 problems** (complete set + 4 bonus) across easy/medium/hard
 - **Monaco editor** (VS Code engine) with Python, JavaScript, and Java support
-- **Submit = run against test cases** with PASS/FAIL results (like Leetcode)
-- **AI Coach** — ask for hints (Socratic method), discuss approach, get code reviews
+- **Submit = run against test cases** — PASS/FAIL per test with input/expected/got output
+- **Always-visible output panel** shows run results and submission status inline
+- **AI Coach** — open on demand, ask for hints (Socratic method), discuss approach, get code reviews
 - **Dynamic question generation** — Claude generates new problems based on your weak topics
-- **Filter by** company (Google, Amazon, Meta, Microsoft), algorithm, difficulty, and frequency
+- **Filter by** category (Array, Tree, DP, Graph…), difficulty, company, and frequency
 
 ### Study Plans
 - **Blind 75 — 4 Week Sprint** (46 problems, 2/day)
@@ -93,7 +94,7 @@ npm run dev
 ├── backend/
 │   ├── main.py                     # FastAPI entry point
 │   ├── data/
-│   │   ├── coding_questions.json   # 32 problems with 294 test cases
+│   │   ├── coding_questions.json   # 79 Blind75 problems with test cases
 │   │   ├── study_plans.json        # 3 structured study plans
 │   │   ├── generated/              # AI-generated questions
 │   │   ├── submissions/            # Submission history per user

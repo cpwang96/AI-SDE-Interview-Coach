@@ -10,7 +10,7 @@ interface Message {
   content: string
 }
 
-function useResizable(initialPct: number, direction: 'horizontal' | 'vertical', containerRef: React.RefObject<HTMLDivElement | null>) {
+function useResizable(initialPct: number, direction: 'horizontal' | 'vertical', containerRef: React.RefObject<HTMLDivElement | null>, min = 15, max = 80) {
   const [pct, setPct] = useState(initialPct)
   const dragging = useRef(false)
 
@@ -27,7 +27,7 @@ function useResizable(initialPct: number, direction: 'horizontal' | 'vertical', 
       } else {
         newPct = ((ev.clientY - rect.top) / rect.height) * 100
       }
-      setPct(Math.min(80, Math.max(15, newPct)))
+      setPct(Math.min(max, Math.max(min, newPct)))
     }
 
     const onMouseUp = () => {
@@ -92,7 +92,8 @@ export default function CodingSession() {
   const leftRef = useRef<HTMLDivElement>(null)
 
   const hResize = useResizable(45, 'horizontal', mainRef)
-  const vResize = useResizable(35, 'vertical', leftRef)
+  // vertical: question panel 20–60%, editor+output always gets at least 40%
+  const vResize = useResizable(38, 'vertical', leftRef, 20, 60)
 
   useEffect(() => {
     startCodingSession(questionId).then(async (res) => {
@@ -164,25 +165,6 @@ export default function CodingSession() {
       const res = await submitSolution(sessionId, code, language, question.id)
       setSubmitResult(res)
       setOutput(res.stdout + (res.stderr ? '\n' + res.stderr : ''))
-
-      if (res.all_passed) {
-        const msg = `I passed all ${res.total} test cases! Please review my solution for code quality, time/space complexity, and suggest any optimizations.`
-        setMessages(prev => [...prev, { role: 'user', content: `Submitted — ${res.passed}/${res.total} tests passed` }])
-        setLoading(true)
-        if (!coachOpen) setUnreadCoach(prev => prev + 1)
-        try {
-          const coachRes = await sendCodingMessage(sessionId, msg, code, language)
-          setMessages(prev => [...prev, { role: 'assistant', content: coachRes.response }])
-          if (!coachOpen) setUnreadCoach(prev => prev + 1)
-        } catch {}
-        setLoading(false)
-      } else if (res.total > 0) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: `**${res.passed}/${res.total} tests passed.** Check the output panel for details. Keep working on it, or ask me for a hint!`
-        }])
-        if (!coachOpen) setUnreadCoach(prev => prev + 1)
-      }
     } catch {
       setOutput('Error submitting solution')
     }
@@ -321,7 +303,7 @@ export default function CodingSession() {
             <div style={{ width: 40, height: 2, borderRadius: 1, background: 'var(--text-muted)', opacity: 0.5 }} />
           </div>
 
-          {/* Editor + output */}
+          {/* Editor + output + submit result */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <CodeEditor
               code={code}
@@ -333,30 +315,9 @@ export default function CodingSession() {
               output={output}
               running={running}
               submitting={submitting}
+              submitResult={submitResult}
             />
           </div>
-
-          {/* Submit result banner */}
-          {submitResult && (
-            <div style={{
-              padding: '8px 16px',
-              background: submitResult.all_passed ? 'var(--green)' : 'var(--red)',
-              color: 'var(--bg-primary)',
-              fontWeight: 600,
-              fontSize: 14,
-              display: 'flex',
-              justifyContent: 'space-between',
-              flexShrink: 0,
-            }}>
-              <span>
-                {submitResult.all_passed
-                  ? `All ${submitResult.total} tests passed!`
-                  : `${submitResult.passed}/${submitResult.total} tests passed`
-                }
-              </span>
-              {submitResult.time_ms && <span>{submitResult.time_ms}ms</span>}
-            </div>
-          )}
         </div>
 
         {/* Coach flyout panel */}

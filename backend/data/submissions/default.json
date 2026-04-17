@@ -7,5 +7,68 @@
     "total": 10,
     "all_passed": true,
     "submitted_at": "2026-04-15T21:53:03.017144"
+  },
+  {
+    "question_id": "contains-duplicate",
+    "code": "import java.util.*;\n\npublic class Solution {\n    public static boolean containsDuplicate(int[] nums) {\n        // Your code here\n        HashSet<Integer> set = new HashMap<>();\n        for (int i = 0; i < nums.length; i++) {\n            if (map.contains(nums[i])) {\n                return true;\n            } else {\n                map.add(nums[i]);\n            }\n        }\n        return false;\n    }\n\n    public static void main(String[] args) {\n        System.out.println(containsDuplicate(new int[]{1,2,3,1}));\n        System.out.println(containsDuplicate(new int[]{1,2,3,4}));\n    }\n}",
+    "language": "java",
+    "passed": 0,
+    "total": 0,
+    "all_passed": false,
+    "submitted_at": "2026-04-15T22:25:14.923480"
+  },
+  {
+    "question_id": "two-sum",
+    "code": "def two_sum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen:\n            return [seen[target - n], i]\n        seen[n] = i",
+    "language": "python",
+    "passed": 10,
+    "total": 10,
+    "all_passed": true,
+    "submitted_at": "2026-04-16T22:56:39.162156"
+  },
+  {
+    "question_id": "two-sum",
+    "code": "def two_sum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen:\n            return [seen[target - n], i]\n        seen[n] = i",
+    "language": "python",
+    "passed": 10,
+    "total": 10,
+    "all_passed": true,
+    "submitted_at": "2026-04-16T23:00:16.520511"
+  },
+  {
+    "question_id": "two-sum",
+    "code": "import java.util.*;\n\npublic class Solution {\n    public static int[] twoSum(int[] nums, int target) {\n        // Your code here\n        return new int[]{};\n    }\n\n    public static void main(String[] args) {\n        System.out.println(Arrays.toString(twoSum(new int[]{2,7,11,15}, 9)));\n        System.out.println(Arrays.toString(twoSum(new int[]{3,2,4}, 6)));\n        System.out.println(Arrays.toString(twoSum(new int[]{3,3}, 6)));\n    }\n}",
+    "language": "java",
+    "passed": 0,
+    "total": 0,
+    "all_passed": false,
+    "submitted_at": "2026-04-16T23:00:28.065012"
+  },
+  {
+    "question_id": "two-sum",
+    "code": "import java.util.*;\n\npublic class Solution {\n    public static int[] twoSum(int[] nums, int target) {\n        // Your code here\n        return new int[]{};\n    }\n\n    public static void main(String[] args) {\n        System.out.println(Arrays.toString(twoSum(new int[]{2,7,11,15}, 9)));\n        System.out.println(Arrays.toString(twoSum(new int[]{3,2,4}, 6)));\n        System.out.println(Arrays.toString(twoSum(new int[]{3,3}, 6)));\n    }\n}",
+    "language": "java",
+    "passed": 0,
+    "total": 0,
+    "all_passed": false,
+    "submitted_at": "2026-04-16T23:00:32.848663"
+  },
+  {
+    "question_id": "two-sum",
+    "code": "def two_sum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        if target - n in seen:\n            return [seen[target - n], i]\n        seen[n] = i",
+    "language": "python",
+    "passed": 10,
+    "total": 10,
+    "all_passed": true,
+    "submitted_at": "2026-04-16T23:00:38.835374"
+  },
+  {
+    "question_id": "two-sum",
+    "code": "import java.util.*;\n\npublic class Solution {\n    public static int[] twoSum(int[] nums, int target) {\n        // Your code here\n        return new int[]{};\n    }\n\n    public static void main(String[] args) {\n        System.out.println(Arrays.toString(twoSum(new int[]{2,7,11,15}, 9)));\n        System.out.println(Arrays.toString(twoSum(new int[]{3,2,4}, 6)));\n        System.out.println(Arrays.toString(twoSum(new int[]{3,3}, 6)));\n    }\n}",
+    "language": "java",
+    "passed": 0,
+    "total": 0,
+    "all_passed": false,
+    "submitted_at": "2026-04-16T23:01:23.366733"
   }
 ]
