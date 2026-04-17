@@ -8,16 +8,16 @@ interface CodeEditorProps {
   onRun: () => void
   onSubmit: () => void
   onNext: () => void
-  output: string | null
+  output: string | null          // unused — kept for API compat
   running: boolean
   submitting: boolean
-  submitResult?: { all_passed: boolean; passed: number; total: number; time_ms?: number } | null
+  submitResult?: any | null      // unused — kept for API compat
 }
 
 const LANGUAGES = [
-  { value: 'python', label: 'Python' },
+  { value: 'java',       label: 'Java'       },
+  { value: 'python',     label: 'Python'     },
   { value: 'javascript', label: 'JavaScript' },
-  { value: 'java', label: 'Java' },
 ]
 
 export default function CodeEditor({
@@ -27,32 +27,36 @@ export default function CodeEditor({
   onLanguageChange,
   onRun,
   onSubmit,
-  onNext,
-  output,
   running,
   submitting,
-  submitResult,
 }: CodeEditorProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--bg-primary)' }}>
+
       {/* Toolbar */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '8px 12px',
+        padding: '0 12px',
+        height: 44,
         borderBottom: '1px solid var(--border)',
         background: 'var(--bg-secondary)',
+        flexShrink: 0,
       }}>
         <select
           value={language}
           onChange={e => onLanguageChange(e.target.value)}
-          style={{ padding: '4px 8px', fontSize: 13 }}
+          style={{
+            padding: '4px 10px', fontSize: 13, background: 'var(--bg-surface)',
+            color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer',
+          }}
         >
           {LANGUAGES.map(l => (
             <option key={l.value} value={l.value}>{l.label}</option>
           ))}
         </select>
+
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={onRun}
@@ -60,36 +64,40 @@ export default function CodeEditor({
             style={{
               background: 'var(--bg-surface)',
               color: 'var(--text-primary)',
-              fontWeight: 500,
-              fontSize: 13,
-              padding: '6px 16px',
+              fontWeight: 500, fontSize: 13,
+              padding: '5px 18px',
+              border: '1px solid var(--border)',
+              borderRadius: 6,
+              cursor: running || submitting ? 'not-allowed' : 'pointer',
               opacity: running || submitting ? 0.5 : 1,
             }}
           >
-            {running ? 'Running...' : 'Run'}
+            {running ? 'Running…' : 'Run'}
           </button>
           <button
             onClick={onSubmit}
             disabled={submitting || running}
             style={{
               background: 'var(--green)',
-              color: 'var(--bg-primary)',
-              fontWeight: 600,
-              fontSize: 13,
-              padding: '6px 20px',
-              opacity: submitting || running ? 0.5 : 1,
+              color: '#000',
+              fontWeight: 700, fontSize: 13,
+              padding: '5px 22px',
+              border: 'none',
+              borderRadius: 6,
+              cursor: submitting || running ? 'not-allowed' : 'pointer',
+              opacity: submitting || running ? 0.6 : 1,
             }}
           >
-            {submitting ? 'Testing...' : 'Submit'}
+            {submitting ? 'Testing…' : 'Submit'}
           </button>
         </div>
       </div>
 
-      {/* Editor — takes remaining space above the always-visible bottom panel */}
+      {/* Monaco editor — fills all remaining height */}
       <div style={{ flex: 1, minHeight: 0 }}>
         <Editor
           height="100%"
-          language={language}
+          language={language === 'java' ? 'java' : language}
           value={code}
           onChange={v => onChange(v || '')}
           theme="vs-dark"
@@ -97,82 +105,18 @@ export default function CodeEditor({
             fontSize: 14,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
-            padding: { top: 12 },
+            padding: { top: 16, bottom: 16 },
             lineNumbers: 'on',
             tabSize: 4,
             automaticLayout: true,
+            fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+            fontLigatures: true,
+            renderLineHighlight: 'line',
+            smoothScrolling: true,
+            cursorBlinking: 'smooth',
+            bracketPairColorization: { enabled: true },
           }}
         />
-      </div>
-
-      {/* Always-visible bottom panel: submit result + output */}
-      <div style={{
-        height: 160,
-        flexShrink: 0,
-        borderTop: '1px solid var(--border)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        background: 'var(--bg-secondary)',
-      }}>
-        {/* Submit result banner */}
-        {submitResult && (
-          <div style={{
-            padding: '6px 14px',
-            background: submitResult.all_passed ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-            borderBottom: `2px solid ${submitResult.all_passed ? 'var(--green)' : 'var(--red)'}`,
-            color: submitResult.all_passed ? 'var(--green)' : 'var(--red)',
-            fontWeight: 600,
-            fontSize: 13,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexShrink: 0,
-          }}>
-            <span>
-              {submitResult.all_passed
-                ? `✓ All ${submitResult.total} test cases passed!`
-                : `✗ ${submitResult.passed}/${submitResult.total} test cases passed`
-              }
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {submitResult.time_ms && (
-                <span style={{ fontWeight: 400, fontSize: 12, opacity: 0.7 }}>{submitResult.time_ms}ms</span>
-              )}
-              <button
-                onClick={onNext}
-                style={{
-                  background: submitResult.all_passed ? 'var(--green)' : 'var(--bg-surface)',
-                  color: submitResult.all_passed ? 'var(--bg-primary)' : 'var(--text-primary)',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  padding: '3px 12px',
-                  borderRadius: 4,
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                Next →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Output */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px' }}>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            {running ? 'Running…' : submitting ? 'Testing…' : 'Output'}
-          </div>
-          {output !== null ? (
-            <pre style={{ fontSize: 13, color: 'var(--text-primary)', whiteSpace: 'pre-wrap', fontFamily: 'monospace', margin: 0 }}>
-              {output}
-            </pre>
-          ) : (
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', fontStyle: 'italic' }}>
-              {running || submitting ? 'Waiting for result…' : 'Run your code or submit to see output here.'}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   )

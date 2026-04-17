@@ -13,13 +13,12 @@ interface Message {
   content: string
 }
 
-// ─── Resizable split hook ─────────────────────────────────────────────────────
-function useResizable(
+// ─── Horizontal resize ────────────────────────────────────────────────────────
+function useHorizontalResize(
   initialPct: number,
-  direction: 'horizontal' | 'vertical',
   containerRef: React.RefObject<HTMLDivElement | null>,
-  min = 15,
-  max = 80,
+  min = 25,
+  max = 60,
 ) {
   const [pct, setPct] = useState(initialPct)
   const dragging = useRef(false)
@@ -27,16 +26,15 @@ function useResizable(
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     dragging.current = true
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
 
     const onMouseMove = (ev: MouseEvent) => {
       if (!dragging.current || !containerRef.current) return
       const rect = containerRef.current.getBoundingClientRect()
-      const newPct = direction === 'horizontal'
-        ? ((ev.clientX - rect.left) / rect.width) * 100
-        : ((ev.clientY - rect.top) / rect.height) * 100
+      const newPct = ((ev.clientX - rect.left) / rect.width) * 100
       setPct(Math.min(max, Math.max(min, newPct)))
     }
-
     const onMouseUp = () => {
       dragging.current = false
       document.removeEventListener('mousemove', onMouseMove)
@@ -44,20 +42,17 @@ function useResizable(
       document.body.style.cursor = ''
       document.body.style.userSelect = ''
     }
-
-    document.body.style.cursor = direction === 'horizontal' ? 'col-resize' : 'row-resize'
-    document.body.style.userSelect = 'none'
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
-  }, [direction, containerRef])
+  }, [containerRef])
 
   return { pct, onMouseDown }
 }
 
 // ─── Timer hook ───────────────────────────────────────────────────────────────
 function useTimer() {
-  const [totalSeconds, setTotalSeconds] = useState(0)   // chosen duration
-  const [remaining, setRemaining]       = useState(0)   // counts down
+  const [totalSeconds, setTotalSeconds] = useState(0)
+  const [remaining, setRemaining]       = useState(0)
   const [running, setRunning]           = useState(false)
   const [expired, setExpired]           = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -70,36 +65,24 @@ function useTimer() {
     setExpired(false)
   }, [])
 
-  const pause = useCallback(() => setRunning(false), [])
+  const pause  = useCallback(() => setRunning(false), [])
   const resume = useCallback(() => { if (remaining > 0) setRunning(true) }, [remaining])
-  const reset = useCallback(() => {
-    setRunning(false)
-    setExpired(false)
-    setTotalSeconds(0)
-    setRemaining(0)
+  const reset  = useCallback(() => {
+    setRunning(false); setExpired(false); setTotalSeconds(0); setRemaining(0)
   }, [])
 
   useEffect(() => {
-    if (!running) {
-      if (intervalRef.current) clearInterval(intervalRef.current)
-      return
-    }
+    if (!running) { if (intervalRef.current) clearInterval(intervalRef.current); return }
     intervalRef.current = setInterval(() => {
       setRemaining(prev => {
-        if (prev <= 1) {
-          setRunning(false)
-          setExpired(true)
-          return 0
-        }
+        if (prev <= 1) { setRunning(false); setExpired(true); return 0 }
         return prev - 1
       })
     }, 1000)
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [running])
 
-  const elapsed = totalSeconds - remaining
-
-  return { totalSeconds, remaining, elapsed, running, expired, start, pause, resume, reset }
+  return { totalSeconds, remaining, elapsed: totalSeconds - remaining, running, expired, start, pause, resume, reset }
 }
 
 function formatTime(s: number) {
@@ -108,13 +91,13 @@ function formatTime(s: number) {
   return `${m}:${sec.toString().padStart(2, '0')}`
 }
 
-// ─── Question formatter ───────────────────────────────────────────────────────
+// ─── Question markdown formatter ──────────────────────────────────────────────
 function formatQuestionMd(question: any): string {
   let md = `${question.description}\n\n`
   md += `### Examples\n\n`
   for (const [i, ex] of (question.examples || []).entries()) {
     md += `**Example ${i + 1}:**\n\`\`\`\nInput:  ${ex.input}\nOutput: ${ex.output}\n\`\`\`\n`
-    if (ex.explanation) md += `> ${ex.explanation}\n\n`
+    if (ex.explanation) md += `*${ex.explanation}*\n\n`
     else md += '\n'
   }
   const constraints = question.constraints || []
@@ -125,7 +108,7 @@ function formatQuestionMd(question: any): string {
   return md
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Main page ────────────────────────────────────────────────────────────────
 export default function CodingSession() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -145,19 +128,13 @@ export default function CodingSession() {
   const [initializing, setInitializing] = useState(true)
   const [coachOpen, setCoachOpen]       = useState(false)
   const [unreadCoach, setUnreadCoach]   = useState(0)
-
-  // Timer
-  const timer = useTimer()
   const [showDurationPicker, setShowDurationPicker] = useState(false)
-  const DURATIONS = [20, 30, 45, 60]
 
-  const mainRef = useRef<HTMLDivElement>(null)
-  const leftRef = useRef<HTMLDivElement>(null)
+  const timer = useTimer()
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { pct: leftPct, onMouseDown: onDividerDown } = useHorizontalResize(40, containerRef)
 
-  const hResize = useResizable(45, 'horizontal', mainRef)
-  const vResize = useResizable(38, 'vertical', leftRef, 20, 60)
-
-  // Init session + prefetch question list
+  // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     getQuestions().then(qs => setAllQuestions(qs)).catch(() => {})
 
@@ -165,7 +142,6 @@ export default function CodingSession() {
       setSessionId(res.session_id)
       setQuestion(res.question)
       setMessages([{ role: 'assistant', content: res.coach_message }])
-
       if (res.question.id) {
         try {
           const sub = await getLatestSubmission(res.question.id)
@@ -182,11 +158,12 @@ export default function CodingSession() {
     }).catch(() => setInitializing(false))
   }, [])
 
-  // Pause timer automatically when all tests pass
+  // Pause timer on solve
   useEffect(() => {
     if (submitResult?.all_passed && timer.running) timer.pause()
   }, [submitResult])
 
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleLanguageChange = (lang: string) => {
     setLanguage(lang)
     if (question?.starter_code?.[lang]) setCode(question.starter_code[lang])
@@ -207,9 +184,7 @@ export default function CodingSession() {
   }
 
   const handleRun = async () => {
-    setRunning(true)
-    setOutput(null)
-    setSubmitResult(null)
+    setRunning(true); setOutput(null); setSubmitResult(null)
     try {
       const res = await executeCode(code, language)
       let out = ''
@@ -218,33 +193,24 @@ export default function CodingSession() {
       if (!out) out = res.exit_code === 0 ? '(no output)' : `Exit code: ${res.exit_code}`
       if (res.time_ms) out += `\n--- ${res.time_ms}ms ---`
       setOutput(out)
-    } catch {
-      setOutput('Error running code')
-    }
+    } catch { setOutput('Error running code') }
     setRunning(false)
   }
 
   const handleSubmit = async () => {
     if (!sessionId || !question) return
-    setSubmitting(true)
-    setOutput(null)
-    setSubmitResult(null)
+    setSubmitting(true); setOutput(null); setSubmitResult(null)
     try {
       const res = await submitSolution(sessionId, code, language, question.id)
       setSubmitResult(res)
       setOutput(res.stdout + (res.stderr ? '\n' + res.stderr : ''))
-    } catch {
-      setOutput('Error submitting solution')
-    }
+    } catch { setOutput('Error submitting solution') }
     setSubmitting(false)
   }
 
-  // Pick a random question (prefer same difficulty, exclude current)
   const handleNext = useCallback(() => {
     if (allQuestions.length === 0) { navigate('/'); return }
-    const sameDiff = allQuestions.filter(
-      q => q.id !== question?.id && q.difficulty === question?.difficulty
-    )
+    const sameDiff = allQuestions.filter(q => q.id !== question?.id && q.difficulty === question?.difficulty)
     const pool = sameDiff.length > 0 ? sameDiff : allQuestions.filter(q => q.id !== question?.id)
     const next = pool[Math.floor(Math.random() * pool.length)]
     if (next) navigate(`/coding?id=${next.id}`)
@@ -255,233 +221,250 @@ export default function CodingSession() {
     if (!coachOpen) setUnreadCoach(0)
   }
 
-  // ─── Timer display ──────────────────────────────────────────────────────────
-  const timerColor = timer.expired
-    ? 'var(--red)'
-    : timer.remaining <= 300 && timer.totalSeconds > 0
-      ? 'var(--red)'
-      : timer.remaining <= 600 && timer.totalSeconds > 0
-        ? 'var(--yellow)'
-        : 'var(--text-muted)'
+  // ── Timer color ───────────────────────────────────────────────────────────
+  const timerColor = timer.expired ? 'var(--red)'
+    : timer.remaining <= 300 && timer.totalSeconds > 0 ? 'var(--red)'
+    : timer.remaining <= 600 && timer.totalSeconds > 0 ? 'var(--yellow)'
+    : 'var(--text-muted)'
 
-  const TimerWidget = () => {
-    if (!timer.totalSeconds) {
-      // Not started yet — show start button
-      return (
-        <div style={{ position: 'relative' }}>
-          <button
-            onClick={() => setShowDurationPicker(p => !p)}
-            style={{
-              background: 'var(--bg-surface)',
-              color: 'var(--text-muted)',
-              fontSize: 12,
-              padding: '4px 10px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-            }}
-          >
-            ⏱ Start Timer
-          </button>
-          {showDurationPicker && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: 4,
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border)',
-              borderRadius: 6,
-              padding: 6,
-              display: 'flex',
-              gap: 4,
-              zIndex: 100,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            }}>
-              {DURATIONS.map(d => (
-                <button
-                  key={d}
-                  onClick={() => { timer.start(d); setShowDurationPicker(false) }}
-                  style={{
-                    background: 'var(--bg-surface)',
-                    color: 'var(--text-primary)',
-                    fontSize: 12,
-                    padding: '4px 10px',
-                    borderRadius: 4,
-                    fontWeight: 500,
-                  }}
-                >
-                  {d}m
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{
-          fontFamily: 'monospace',
-          fontSize: 14,
-          fontWeight: 700,
-          color: timerColor,
-          minWidth: 48,
-          letterSpacing: '0.05em',
-        }}>
-          {timer.expired ? '⏰ 0:00' : `⏱ ${formatTime(timer.remaining)}`}
-        </span>
-        {/* pause/resume */}
-        {!timer.expired && (
-          <button
-            onClick={timer.running ? timer.pause : timer.resume}
-            style={{ background: 'none', color: 'var(--text-muted)', fontSize: 11, padding: '2px 6px' }}
-            title={timer.running ? 'Pause' : 'Resume'}
-          >
-            {timer.running ? '⏸' : '▶'}
-          </button>
-        )}
-        {/* reset */}
-        <button
-          onClick={timer.reset}
-          style={{ background: 'none', color: 'var(--text-muted)', fontSize: 11, padding: '2px 4px' }}
-          title="Reset timer"
-        >
-          ✕
-        </button>
-        {/* solved time badge */}
-        {submitResult?.all_passed && (
-          <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 600 }}>
-            Solved in {formatTime(timer.elapsed)}
-          </span>
-        )}
-      </div>
-    )
-  }
-
-  // ─── Loading state ──────────────────────────────────────────────────────────
+  // ── Loading ────────────────────────────────────────────────────────────────
   if (initializing) {
     return (
-      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>Starting session...</p>
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)' }}>
+        <p style={{ color: 'var(--text-secondary)' }}>Loading...</p>
       </div>
     )
   }
 
-  // ─── Main render ────────────────────────────────────────────────────────────
+  const diffColor = question?.difficulty === 'easy' ? 'var(--green)'
+    : question?.difficulty === 'medium' ? 'var(--yellow)'
+    : 'var(--red)'
+
+  const diffBg = question?.difficulty === 'easy' ? 'rgba(34,197,94,0.1)'
+    : question?.difficulty === 'medium' ? 'rgba(234,179,8,0.1)'
+    : 'rgba(239,68,68,0.1)'
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)' }}>
+
+      {/* ── Top nav bar ── */}
       <div style={{
-        padding: '8px 16px',
+        height: 44,
+        padding: '0 16px',
         borderBottom: '1px solid var(--border)',
+        background: 'var(--bg-secondary)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        background: 'var(--bg-secondary)',
         flexShrink: 0,
+        gap: 12,
       }}>
-        {/* Left: back + title + tags */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {/* Left */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
             onClick={() => navigate('/')}
-            style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)', fontSize: 13, padding: '5px 12px' }}
+            style={{ background: 'transparent', color: 'var(--text-muted)', fontSize: 13, padding: '4px 8px', border: '1px solid var(--border)', borderRadius: 6 }}
           >
-            Back
+            ← Problems
           </button>
           {question && (
-            <>
-              <h2 style={{ fontSize: 15, fontWeight: 600 }}>{question.title}</h2>
-              <span style={{
-                fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
-                color: question.difficulty === 'easy' ? 'var(--green)' : question.difficulty === 'medium' ? 'var(--yellow)' : 'var(--red)',
-                background: question.difficulty === 'easy' ? 'rgba(34,197,94,0.1)' : question.difficulty === 'medium' ? 'rgba(234,179,8,0.1)' : 'rgba(239,68,68,0.1)',
-              }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{question.title}</span>
+              <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 10, color: diffColor, background: diffBg }}>
                 {question.difficulty}
               </span>
-              {question.tags?.slice(0, 3).map((t: string) => (
-                <span key={t} style={{ fontSize: 10, color: 'var(--text-muted)', background: 'var(--bg-surface)', padding: '2px 6px', borderRadius: 4 }}>
-                  {t}
-                </span>
-              ))}
-            </>
+            </div>
           )}
         </div>
 
-        {/* Right: timer + next + coach */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <TimerWidget />
-          <button
-            onClick={handleNext}
-            title="Random question (same difficulty)"
-            style={{ background: 'var(--bg-surface)', color: 'var(--text-muted)', fontSize: 12, padding: '4px 10px' }}
+        {/* Center: Timer */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {!timer.totalSeconds ? (
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowDurationPicker(p => !p)}
+                style={{ background: 'transparent', color: 'var(--text-muted)', fontSize: 12, padding: '4px 10px', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer' }}
+              >
+                ⏱ Timer
+              </button>
+              {showDurationPicker && (
+                <div style={{
+                  position: 'absolute', top: '110%', left: '50%', transform: 'translateX(-50%)',
+                  background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8,
+                  padding: 8, display: 'flex', gap: 6, zIndex: 200, boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                }}>
+                  {[20, 30, 45, 60].map(d => (
+                    <button
+                      key={d}
+                      onClick={() => { timer.start(d); setShowDurationPicker(false) }}
+                      style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer' }}
+                    >
+                      {d}m
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontFamily: 'monospace', fontSize: 15, fontWeight: 700, color: timerColor, minWidth: 52 }}>
+                {timer.expired ? '⏰ 0:00' : `⏱ ${formatTime(timer.remaining)}`}
+              </span>
+              {!timer.expired && (
+                <button onClick={timer.running ? timer.pause : timer.resume}
+                  style={{ background: 'transparent', color: 'var(--text-muted)', fontSize: 14, padding: '2px 5px', border: 'none', cursor: 'pointer' }}
+                  title={timer.running ? 'Pause' : 'Resume'}
+                >{timer.running ? '⏸' : '▶'}</button>
+              )}
+              <button onClick={timer.reset}
+                style={{ background: 'transparent', color: 'var(--text-muted)', fontSize: 12, padding: '2px 4px', border: 'none', cursor: 'pointer' }}
+                title="Reset"
+              >✕</button>
+              {submitResult?.all_passed && (
+                <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 600, marginLeft: 2 }}>
+                  ✓ {formatTime(timer.elapsed)}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={handleNext}
+            style={{ background: 'transparent', color: 'var(--text-muted)', fontSize: 12, padding: '4px 10px', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer' }}
           >
             Next →
           </button>
           <button
             onClick={toggleCoach}
             style={{
-              background: coachOpen ? 'var(--accent)' : 'var(--bg-surface)',
+              background: coachOpen ? 'var(--accent)' : 'transparent',
               color: coachOpen ? '#fff' : 'var(--text-primary)',
-              fontSize: 13, fontWeight: 600, padding: '5px 14px', position: 'relative',
+              fontSize: 13, fontWeight: 600, padding: '4px 14px',
+              border: `1px solid ${coachOpen ? 'var(--accent)' : 'var(--border)'}`,
+              borderRadius: 6, cursor: 'pointer', position: 'relative',
             }}
           >
             Coach
             {unreadCoach > 0 && !coachOpen && (
               <span style={{
-                position: 'absolute', top: -6, right: -6, width: 18, height: 18,
+                position: 'absolute', top: -5, right: -5, width: 16, height: 16,
                 borderRadius: '50%', background: 'var(--red)', color: '#fff',
-                fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                {unreadCoach}
-              </span>
+                fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>{unreadCoach}</span>
             )}
           </button>
         </div>
       </div>
 
-      {/* Main content */}
-      <div ref={mainRef} style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-        {/* Left panel: Question (top) + Editor (bottom) */}
-        <div
-          ref={leftRef}
-          style={{
-            width: coachOpen ? 'calc(100% - 400px)' : '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            transition: coachOpen ? 'width 0.2s ease' : 'none',
-          }}
-        >
-          {/* Question panel */}
-          {question && (
-            <div style={{
-              height: `${vResize.pct}%`,
-              overflowY: 'auto',
-              padding: '16px 20px',
-              fontSize: 14,
-              lineHeight: 1.7,
-              flexShrink: 0,
-            }}>
-              <div className="markdown-body" style={{ maxWidth: 800 }}>
+      {/* ── Body: left panel | divider | right panel ── */}
+      <div ref={containerRef} style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+        {/* LEFT: problem statement + output */}
+        <div style={{
+          width: `${leftPct}%`,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}>
+          {/* Problem statement — scrollable */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+            {question && (
+              <div className="markdown-body" style={{ fontSize: 14, lineHeight: 1.75, maxWidth: 700 }}>
+                {/* Tags row */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }}>
+                  {question.category && (
+                    <span style={{ fontSize: 11, color: 'var(--accent)', background: 'rgba(99,102,241,0.1)', padding: '2px 8px', borderRadius: 10, fontWeight: 500 }}>
+                      {question.category}
+                    </span>
+                  )}
+                  {question.tags?.slice(0, 4).map((t: string) => (
+                    <span key={t} style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-surface)', padding: '2px 8px', borderRadius: 10 }}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
                 <ReactMarkdown>{formatQuestionMd(question)}</ReactMarkdown>
               </div>
-            </div>
-          )}
-
-          {/* Vertical resize handle */}
-          <div
-            onMouseDown={vResize.onMouseDown}
-            style={{
-              height: 6, cursor: 'row-resize', background: 'var(--border)',
-              flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <div style={{ width: 40, height: 2, borderRadius: 1, background: 'var(--text-muted)', opacity: 0.5 }} />
+            )}
           </div>
 
-          {/* Editor + output */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          {/* OUTPUT panel — pinned to bottom of left column */}
+          <div style={{
+            borderTop: '1px solid var(--border)',
+            background: 'var(--bg-secondary)',
+            flexShrink: 0,
+          }}>
+            {/* Result banner */}
+            {submitResult && (
+              <div style={{
+                padding: '8px 16px',
+                background: submitResult.all_passed ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                borderBottom: `1px solid ${submitResult.all_passed ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: submitResult.all_passed ? 'var(--green)' : 'var(--red)' }}>
+                  {submitResult.all_passed
+                    ? `✓ All ${submitResult.total} test cases passed!`
+                    : `✗ ${submitResult.passed}/${submitResult.total} test cases passed`}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {submitResult.time_ms && (
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{submitResult.time_ms}ms</span>
+                  )}
+                  <button onClick={handleNext} style={{
+                    background: submitResult.all_passed ? 'var(--green)' : 'var(--bg-surface)',
+                    color: submitResult.all_passed ? '#000' : 'var(--text-primary)',
+                    fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                  }}>Next →</button>
+                </div>
+              </div>
+            )}
+
+            {/* Console output */}
+            <div style={{ padding: '10px 16px', maxHeight: 200, minHeight: 80, overflowY: 'auto' }}>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                {running ? 'Running…' : submitting ? 'Testing…' : 'Console'}
+              </div>
+              {output !== null ? (
+                <pre style={{ fontSize: 12, color: 'var(--text-primary)', whiteSpace: 'pre-wrap', fontFamily: 'monospace', margin: 0, lineHeight: 1.6 }}>
+                  {output}
+                </pre>
+              ) : (
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                  {running || submitting ? '' : 'Run code or submit to see results here.'}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Drag divider */}
+        <div
+          onMouseDown={onDividerDown}
+          style={{
+            width: 5,
+            cursor: 'col-resize',
+            background: 'var(--border)',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--accent)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--border)')}
+        >
+        </div>
+
+        {/* RIGHT: editor (full height) + optional coach panel */}
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minWidth: 0 }}>
+
+          {/* Editor column */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
             <CodeEditor
               code={code}
               language={language}
@@ -490,32 +473,32 @@ export default function CodingSession() {
               onRun={handleRun}
               onSubmit={handleSubmit}
               onNext={handleNext}
-              output={output}
+              output={null}          /* output shown in left panel */
               running={running}
               submitting={submitting}
-              submitResult={submitResult}
+              submitResult={null}    /* result shown in left panel */
             />
           </div>
-        </div>
 
-        {/* Coach flyout */}
-        <div style={{
-          width: coachOpen ? 400 : 0,
-          overflow: 'hidden',
-          transition: 'width 0.2s ease',
-          borderLeft: coachOpen ? '1px solid var(--border)' : 'none',
-          flexShrink: 0,
-        }}>
-          {coachOpen && (
-            <div style={{ width: 400, height: '100%' }}>
-              <ChatPanel
-                messages={messages}
-                onSend={handleSend}
-                loading={loading}
-                placeholder="Ask for a hint, discuss approach..."
-              />
-            </div>
-          )}
+          {/* Coach flyout */}
+          <div style={{
+            width: coachOpen ? 360 : 0,
+            overflow: 'hidden',
+            transition: 'width 0.2s ease',
+            borderLeft: coachOpen ? '1px solid var(--border)' : 'none',
+            flexShrink: 0,
+          }}>
+            {coachOpen && (
+              <div style={{ width: 360, height: '100%' }}>
+                <ChatPanel
+                  messages={messages}
+                  onSend={handleSend}
+                  loading={loading}
+                  placeholder="Ask for a hint or discuss approach..."
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
