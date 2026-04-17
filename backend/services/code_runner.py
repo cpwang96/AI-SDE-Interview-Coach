@@ -1,3 +1,4 @@
+import re
 import subprocess
 import tempfile
 import os
@@ -24,7 +25,10 @@ TIMEOUT_SECONDS = 10
 
 def _run_java(code: str, stdin: str = "") -> ExecuteResult:
     """Compile and run Java code. Extracts class name from code."""
-    import re
+    # Strip 'public' from the Solution class so that our appended 'public class Main'
+    # is the only public class in the file (Java requires filename == public class name).
+    code = re.sub(r'\bpublic\s+(class\s+Solution\b)', r'\1', code)
+
     match = re.search(r'public\s+class\s+(\w+)', code)
     class_name = match.group(1) if match else "Solution"
 
