@@ -23,6 +23,10 @@
 - [x] **Keyboard shortcuts** — Ctrl/Cmd+Enter → Run, Ctrl/Cmd+Shift+Enter → Submit
 - [x] **"Needs Review" flag** 🔖 — toggle in nav bar, shown on home page list
 - [x] **Next button page reload bug** — React Router reused same component instance across query-param nav; fixed with `key={search}` wrapper in App.tsx
+- [x] **Tiered hints** 💡 — 3 progressive hints, Claude-generated on first request and cached to disk; hidden in mock mode
+- [x] **Test case breakdown** — submit result shows structured per-row table (✓/✗, input, expected, got)
+- [x] **Submission history per question** 📋 — collapsible panel, all past attempts with date/language/pass rate
+- [x] **Mock interview mode** 🎯 — 45-min locked timer, hints hidden, coach uses strict interviewer system prompt
 
 ---
 

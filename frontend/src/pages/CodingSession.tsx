@@ -6,7 +6,7 @@ import ChatPanel from '../components/ChatPanel'
 import {
   startCodingSession, sendCodingMessage, executeCode,
   submitSolution, getLatestSubmission, getQuestions, markQuestionComplete,
-  getNote, saveNote, toggleFlag,
+  getNote, saveNote, toggleFlag, getHints, getSubmissionHistory,
 } from '../api/client'
 
 interface Message {
@@ -132,6 +132,14 @@ export default function CodingSession() {
   const [coachOpen, setCoachOpen]       = useState(false)
   const [unreadCoach, setUnreadCoach]   = useState(0)
   const [showDurationPicker, setShowDurationPicker] = useState(false)
+  const [hints, setHints]               = useState<{hint_1: string; hint_2: string; hint_3: string} | null>(null)
+  const [hintsRevealed, setHintsRevealed] = useState(0)
+  const [hintsLoading, setHintsLoading] = useState(false)
+  const [hintsOpen, setHintsOpen]       = useState(false)
+  const [history, setHistory]           = useState<any[]>([])
+  const [showHistory, setShowHistory]   = useState(false)
+  const [mockMode, setMockMode]         = useState(false)
+  const [showMockConfirm, setShowMockConfirm] = useState(false)
   const [note, setNote]                 = useState('')
   const [noteSaved, setNoteSaved]       = useState(false)
   const [flagged, setFlagged]           = useState(false)
@@ -152,6 +160,9 @@ export default function CodingSession() {
       // Load saved note + flag for this question
       if (res.question.id) {
         getNote(res.question.id).then(r => { setNote(r.note); setFlagged(r.flagged) }).catch(() => {})
+      }
+      if (res.question.id) {
+        getSubmissionHistory(res.question.id).then(setHistory).catch(() => {})
       }
       if (res.question.id) {
         try {
@@ -185,7 +196,7 @@ export default function CodingSession() {
     setMessages(prev => [...prev, { role: 'user', content: message }])
     setLoading(true)
     try {
-      const res = await sendCodingMessage(sessionId, message, code, language)
+      const res = await sendCodingMessage(sessionId, message, code, language, mockMode)
       setMessages(prev => [...prev, { role: 'assistant', content: res.response }])
       if (!coachOpen) setUnreadCoach(prev => prev + 1)
     } catch {
@@ -215,6 +226,7 @@ export default function CodingSession() {
       const res = await submitSolution(sessionId, code, language, question.id)
       setSubmitResult(res)
       setOutput(res.stdout + (res.stderr ? '\n' + res.stderr : ''))
+      if (question?.id) getSubmissionHistory(question.id).then(setHistory).catch(() => {})
       // Auto-mark complete in study plan on a passing submission
       if (res.all_passed && fromStudy && studyPlanId) {
         markQuestionComplete(studyPlanId, question.id).catch(() => {})
@@ -242,6 +254,27 @@ export default function CodingSession() {
           .catch(() => {})
       }
     }, 800)
+  }
+
+  const handleLoadHints = async () => {
+    if (hints || hintsLoading || !question?.id) return
+    setHintsLoading(true)
+    setHintsOpen(true)
+    try {
+      const h = await getHints(question.id)
+      if (!h.error) setHints(h as any)
+      else setHints({ hint_1: 'Hints unavailable (check API credits)', hint_2: '', hint_3: '' })
+    } catch {
+      setHints({ hint_1: 'Hints unavailable', hint_2: '', hint_3: '' })
+    }
+    setHintsLoading(false)
+  }
+
+  const handleStartMock = () => {
+    setMockMode(true)
+    setShowMockConfirm(false)
+    setHintsOpen(false)
+    if (!timer.totalSeconds) timer.start(45)
   }
 
   const handleToggleFlag = async () => {
@@ -384,6 +417,43 @@ export default function CodingSession() {
           >
             🔖
           </button>
+          <div style={{ position: 'relative' }}>
+            {showMockConfirm && !mockMode && (
+              <div style={{
+                position: 'absolute', top: '110%', right: 0, zIndex: 300,
+                background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+                borderRadius: 10, padding: '14px 16px', width: 240,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Start Mock Interview?</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.5 }}>
+                  45-min timer starts, hints hidden, coach switches to interviewer mode.
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={handleStartMock} style={{ flex: 1, background: 'var(--accent)', color: '#fff', fontSize: 12, fontWeight: 700, padding: '6px 0', borderRadius: 6, border: 'none', cursor: 'pointer' }}>
+                    Start
+                  </button>
+                  <button onClick={() => setShowMockConfirm(false)} style={{ flex: 1, background: 'var(--bg-surface)', color: 'var(--text-muted)', fontSize: 12, padding: '6px 0', borderRadius: 6, border: '1px solid var(--border)', cursor: 'pointer' }}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+            <button
+              onClick={() => mockMode ? undefined : setShowMockConfirm(p => !p)}
+              title={mockMode ? 'Mock interview in progress' : 'Start mock interview'}
+              style={{
+                background: mockMode ? 'rgba(239,68,68,0.15)' : 'transparent',
+                color: mockMode ? 'var(--red)' : 'var(--text-muted)',
+                fontSize: 12, fontWeight: mockMode ? 700 : 400,
+                padding: '4px 10px',
+                border: `1px solid ${mockMode ? 'rgba(239,68,68,0.4)' : 'var(--border)'}`,
+                borderRadius: 6, cursor: mockMode ? 'default' : 'pointer',
+              }}
+            >
+              {mockMode ? '🎯 MOCK' : '🎯 Mock'}
+            </button>
+          </div>
           <button
             onClick={toggleCoach}
             style={{
@@ -436,6 +506,64 @@ export default function CodingSession() {
                 </div>
                 <ReactMarkdown>{formatQuestionMd(question)}</ReactMarkdown>
 
+                {/* Hints */}
+                {!mockMode && (
+                  <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                    <button
+                      onClick={hintsOpen && hints ? () => setHintsOpen(p => !p) : handleLoadHints}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 6, background: 'none',
+                        color: 'var(--text-muted)', fontSize: 12, fontWeight: 600, padding: 0,
+                        border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.08em',
+                      }}
+                    >
+                      <span>💡 Hints</span>
+                      {hintsLoading && <span style={{ fontSize: 11 }}>generating…</span>}
+                      {hints && !hintsLoading && <span style={{ fontSize: 11 }}>{hintsOpen ? '▲' : '▼'}</span>}
+                      {!hints && !hintsLoading && <span style={{ fontSize: 11, color: 'var(--accent)' }}>reveal</span>}
+                    </button>
+
+                    {hintsOpen && hints && (
+                      <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {(['hint_1', 'hint_2', 'hint_3'] as const).map((key, idx) => {
+                          const label = `Hint ${idx + 1}`
+                          const isRevealed = hintsRevealed > idx
+                          const isNext = hintsRevealed === idx
+                          return (
+                            <div key={key} style={{
+                              background: isRevealed ? 'var(--bg-surface)' : 'var(--bg-secondary)',
+                              border: `1px solid ${isRevealed ? 'rgba(99,102,241,0.3)' : 'var(--border)'}`,
+                              borderRadius: 8, padding: '10px 12px',
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isRevealed ? 6 : 0 }}>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: isRevealed ? 'var(--accent)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                  {label}
+                                </span>
+                                {!isRevealed && isNext && (
+                                  <button
+                                    onClick={() => setHintsRevealed(idx + 1)}
+                                    style={{ background: 'var(--accent)', color: '#fff', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 5, border: 'none', cursor: 'pointer' }}
+                                  >
+                                    Reveal
+                                  </button>
+                                )}
+                                {!isRevealed && !isNext && (
+                                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>locked</span>
+                                )}
+                              </div>
+                              {isRevealed && hints[key] && (
+                                <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+                                  {hints[key]}
+                                </p>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Notes */}
                 <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -469,6 +597,45 @@ export default function CodingSession() {
                     onBlur={e => (e.target.style.borderColor = 'var(--border)')}
                   />
                 </div>
+
+                {/* Submission history */}
+                {history.length > 0 && (
+                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+                    <button
+                      onClick={() => setShowHistory(p => !p)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 6, background: 'none',
+                        color: 'var(--text-muted)', fontSize: 12, fontWeight: 600,
+                        padding: 0, border: 'none', cursor: 'pointer',
+                        textTransform: 'uppercase', letterSpacing: '0.08em',
+                      }}
+                    >
+                      <span>📋 History ({history.length} attempt{history.length !== 1 ? 's' : ''})</span>
+                      <span style={{ fontSize: 11 }}>{showHistory ? '▲' : '▼'}</span>
+                    </button>
+                    {showHistory && (
+                      <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {history.map((h, i) => {
+                          const date = new Date(h.submitted_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                          const passRate = h.total > 0 ? `${h.passed}/${h.total}` : '—'
+                          return (
+                            <div key={i} style={{
+                              display: 'flex', alignItems: 'center', gap: 10,
+                              padding: '8px 12px', borderRadius: 6,
+                              background: h.all_passed ? 'rgba(34,197,94,0.07)' : 'var(--bg-surface)',
+                              fontSize: 12,
+                            }}>
+                              <span style={{ fontSize: 14 }}>{h.all_passed ? '✅' : '❌'}</span>
+                              <span style={{ color: 'var(--text-muted)', minWidth: 48 }}>{date}</span>
+                              <span style={{ color: 'var(--text-muted)', minWidth: 60, textTransform: 'capitalize' }}>{h.language}</span>
+                              <span style={{ fontWeight: 600, color: h.all_passed ? 'var(--green)' : 'var(--text-primary)' }}>{passRate} tests</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -533,7 +700,24 @@ export default function CodingSession() {
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
                   {running ? 'Running…' : submitting ? 'Testing…' : 'Console'}
                 </div>
-                {output !== null ? (
+                {(submitResult?.test_results?.length ?? 0) > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {submitResult.test_results.map((tr: any, i: number) => (
+                      <div key={i} style={{
+                        display: 'grid', gridTemplateColumns: '22px 1fr 1fr 1fr',
+                        gap: 8, padding: '5px 8px', borderRadius: 5, fontSize: 11,
+                        background: tr.passed ? 'rgba(34,197,94,0.07)' : 'rgba(239,68,68,0.07)',
+                        border: `1px solid ${tr.passed ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                        fontFamily: 'monospace',
+                      }}>
+                        <span style={{ color: tr.passed ? 'var(--green)' : 'var(--red)', fontWeight: 700 }}>{tr.passed ? '✓' : '✗'}</span>
+                        <span style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={`Input: ${tr.input}`}>{tr.input}</span>
+                        <span style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={`Expected: ${tr.expected}`}>→ {tr.expected}</span>
+                        <span style={{ color: tr.passed ? 'var(--green)' : 'var(--red)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={`Got: ${tr.got}`}>{tr.passed ? tr.got : `✗ ${tr.got}`}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : output !== null ? (
                   <pre style={{ fontSize: 12, color: 'var(--text-primary)', whiteSpace: 'pre-wrap', fontFamily: 'monospace', margin: 0, lineHeight: 1.6 }}>
                     {output}
                   </pre>

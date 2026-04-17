@@ -56,3 +56,10 @@ def get_latest_submission(user_id: str, question_id: str) -> Optional[dict]:
     subs = load_submissions(user_id)
     matches = [s for s in subs if s["question_id"] == question_id]
     return matches[-1] if matches else None
+
+
+def get_question_submissions(user_id: str, question_id: str) -> list[dict]:
+    """Return all submissions for a specific question, newest first."""
+    subs = load_submissions(user_id)
+    matches = [s for s in subs if s["question_id"] == question_id]
+    return list(reversed(matches))

@@ -28,6 +28,7 @@ class ChatRequest(BaseModel):
     message: str
     code: Optional[str] = None
     language: Optional[str] = "python"
+    mock_mode: bool = False
 
 
 class ChatResponse(BaseModel):

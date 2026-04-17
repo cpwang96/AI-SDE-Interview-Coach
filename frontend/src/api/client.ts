@@ -34,10 +34,10 @@ export function startCodingSession(questionId?: string, difficulty?: string, top
   );
 }
 
-export function sendCodingMessage(sessionId: string, message: string, code?: string, language?: string) {
+export function sendCodingMessage(sessionId: string, message: string, code?: string, language?: string, mockMode = false) {
   return request<{ response: string }>('/coding/chat', {
     method: 'POST',
-    body: JSON.stringify({ session_id: sessionId, message, code, language }),
+    body: JSON.stringify({ session_id: sessionId, message, code, language, mock_mode: mockMode }),
   });
 }
 
@@ -45,6 +45,7 @@ export function submitSolution(sessionId: string, code: string, language: string
   return request<{
     stdout: string; stderr: string; exit_code: number; time_ms: number | null;
     passed: number; failed: number; total: number; all_passed: boolean;
+    test_results: Array<{ passed: boolean; input: string; expected: string; got: string }>;
   }>('/coding/submit', {
     method: 'POST',
     body: JSON.stringify({ session_id: sessionId, code, language, question_id: questionId }),
@@ -57,6 +58,16 @@ export function getSolvedQuestions(userId: string = 'default') {
 
 export function getLatestSubmission(questionId: string, userId: string = 'default') {
   return request<any>(`/coding/submissions/${questionId}?user_id=${userId}`);
+}
+
+export function getSubmissionHistory(questionId: string, userId: string = 'default') {
+  return request<any[]>(`/coding/submissions/${questionId}/history?user_id=${userId}`);
+}
+
+export function getHints(questionId: string) {
+  return request<{ hint_1: string; hint_2: string; hint_3: string; error?: string }>(
+    `/coding/hints/${questionId}`
+  );
 }
 
 export function generateQuestion(topic: string, difficulty: string, context?: string) {
