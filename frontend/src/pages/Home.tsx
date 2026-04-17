@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
-import { getQuestions, getFilters, getSolvedQuestions, getDesignTopics, getAssessmentResults } from '../api/client'
+import { getQuestions, getFilters, getSolvedQuestions, getDesignTopics, getAssessmentResults, getFlaggedQuestions } from '../api/client'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -17,6 +17,7 @@ export default function Home() {
   const [frequency, setFrequency] = useState('')
   const [category, setCategory] = useState('')
   const [solved, setSolved] = useState<Set<string>>(new Set())
+  const [flagged, setFlagged] = useState<Set<string>>(new Set())
   const [assessment, setAssessment] = useState<any>(null)
   const [showPlan, setShowPlan] = useState(false)
   const [activeTab, setActiveTab] = useState<'coding' | 'design'>('coding')
@@ -25,6 +26,7 @@ export default function Home() {
     getFilters().then(setFilterOptions).catch(() => {})
     getDesignTopics().then(setDesignTopics).catch(() => {})
     getSolvedQuestions().then(ids => setSolved(new Set(ids))).catch(() => {})
+    getFlaggedQuestions().then(ids => setFlagged(new Set(ids))).catch(() => {})
     if (userId) {
       getAssessmentResults(userId).then(setAssessment).catch(() => {})
     }
@@ -271,6 +273,9 @@ export default function Home() {
                     {q.title}
                     {q.frequency === 'high' && (
                       <span style={{ fontSize: 9, color: 'var(--red)', background: 'rgba(243,139,168,0.12)', padding: '1px 5px', borderRadius: 3, fontWeight: 700, letterSpacing: 0.3 }}>HOT</span>
+                    )}
+                    {flagged.has(q.id) && (
+                      <span title="Needs review" style={{ fontSize: 12, opacity: 0.85 }}>🔖</span>
                     )}
                   </span>
 

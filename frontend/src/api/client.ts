@@ -146,9 +146,9 @@ export function getStudyProgress(planId: string, userId: string = 'default') {
   return request<any>(`/study/plans/${planId}/progress?user_id=${userId}`);
 }
 
-// Notes
+// Notes & flags
 export function getNote(questionId: string, userId: string = 'default') {
-  return request<{ note: string }>(`/notes/${questionId}?user_id=${userId}`);
+  return request<{ note: string; flagged: boolean }>(`/notes/${questionId}?user_id=${userId}`);
 }
 
 export function saveNote(questionId: string, note: string, userId: string = 'default') {
@@ -156,6 +156,16 @@ export function saveNote(questionId: string, note: string, userId: string = 'def
     method: 'POST',
     body: JSON.stringify({ user_id: userId, note }),
   });
+}
+
+export function toggleFlag(questionId: string, userId: string = 'default') {
+  return request<{ flagged: boolean }>(`/notes/${questionId}/flag?user_id=${userId}`, {
+    method: 'POST',
+  });
+}
+
+export function getFlaggedQuestions(userId: string = 'default') {
+  return request<string[]>(`/notes/flags?user_id=${userId}`);
 }
 
 export function startStudyPlan(planId: string, userId: string = 'default') {

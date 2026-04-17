@@ -6,7 +6,7 @@ import ChatPanel from '../components/ChatPanel'
 import {
   startCodingSession, sendCodingMessage, executeCode,
   submitSolution, getLatestSubmission, getQuestions, markQuestionComplete,
-  getNote, saveNote,
+  getNote, saveNote, toggleFlag,
 } from '../api/client'
 
 interface Message {
@@ -134,6 +134,7 @@ export default function CodingSession() {
   const [showDurationPicker, setShowDurationPicker] = useState(false)
   const [note, setNote]                 = useState('')
   const [noteSaved, setNoteSaved]       = useState(false)
+  const [flagged, setFlagged]           = useState(false)
   const noteSaveTimer                   = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const timer = useTimer()
@@ -148,9 +149,9 @@ export default function CodingSession() {
       setSessionId(res.session_id)
       setQuestion(res.question)
       setMessages([{ role: 'assistant', content: res.coach_message }])
-      // Load saved note for this question
+      // Load saved note + flag for this question
       if (res.question.id) {
-        getNote(res.question.id).then(r => setNote(r.note)).catch(() => {})
+        getNote(res.question.id).then(r => { setNote(r.note); setFlagged(r.flagged) }).catch(() => {})
       }
       if (res.question.id) {
         try {
@@ -241,6 +242,12 @@ export default function CodingSession() {
           .catch(() => {})
       }
     }, 800)
+  }
+
+  const handleToggleFlag = async () => {
+    if (!question?.id) return
+    const res = await toggleFlag(question.id)
+    setFlagged(res.flagged)
   }
 
   const toggleCoach = () => {
@@ -363,6 +370,19 @@ export default function CodingSession() {
             style={{ background: 'transparent', color: 'var(--text-muted)', fontSize: 12, padding: '4px 10px', border: '1px solid var(--border)', borderRadius: 6, cursor: 'pointer' }}
           >
             Next →
+          </button>
+          <button
+            onClick={handleToggleFlag}
+            title={flagged ? 'Remove review flag' : 'Flag for review'}
+            style={{
+              background: flagged ? 'rgba(234,179,8,0.15)' : 'transparent',
+              color: flagged ? 'var(--yellow)' : 'var(--text-muted)',
+              fontSize: 15, padding: '4px 8px',
+              border: `1px solid ${flagged ? 'rgba(234,179,8,0.4)' : 'var(--border)'}`,
+              borderRadius: 6, cursor: 'pointer', lineHeight: 1,
+            }}
+          >
+            🔖
           </button>
           <button
             onClick={toggleCoach}
